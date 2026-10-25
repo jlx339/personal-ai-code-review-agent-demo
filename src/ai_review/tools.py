@@ -47,8 +47,9 @@ class SnapshotTools:
             if content is None:
                 raise ValueError('Source side unavailable')
             lines=redact_source(content).splitlines()
-            if end_line>len(lines):
-                raise ValueError('Source range exceeds file')
+            if start_line>len(lines):
+                raise ValueError('Source start exceeds file')
+            end_line=min(end_line,len(lines))
             text='\n'.join(lines[start_line-1:end_line])
             return ToolResult(True,dict(path=path,start_line=start_line,end_line=end_line,
                 content=text[:self.settings.tool_output_chars]),truncated=len(text)>self.settings.tool_output_chars)

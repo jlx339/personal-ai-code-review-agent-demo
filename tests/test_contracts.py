@@ -25,3 +25,9 @@ def test_settings_prohibit_paid_model_and_invalid_budget():
         Settings(model='other')
     with pytest.raises(ValueError):
         Settings(max_requests=0)
+
+
+def test_evidence_accepts_head_as_alias_for_source():
+    from ai_review.schemas import Evidence
+    e=Evidence('a.py',1,1,'x=1',source='head')
+    assert e.source=='source'

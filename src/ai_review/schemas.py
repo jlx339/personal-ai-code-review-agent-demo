@@ -69,6 +69,8 @@ class Evidence:
 
     def __post_init__(self):
         safe_path(self.path)
+        if self.source=='head':
+            self.source='source'
         if self.source not in ('source', 'base'):
             raise ValueError('Invalid evidence source')
         if type(self.start_line) is not int or type(self.end_line) is not int or not (

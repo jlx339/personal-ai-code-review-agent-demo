@@ -46,7 +46,7 @@ class ReviewModel:
     def invoke(self,messages,tools=None,response_schema=None,system=''):
         if self.terminal_error:
             raise ModelError(self.terminal_error)
-        config={'maxOutputTokens':self.settings.output_tokens,'thinkingConfig':{'thinkingLevel':'MEDIUM'}}
+        config={'maxOutputTokens':self.settings.output_tokens,'thinkingConfig':{'thinkingLevel':'MINIMAL'}}
         if response_schema:
             config.update(responseMimeType='application/json',responseJsonSchema=response_schema)
         body={'contents':messages,'generationConfig':config}
@@ -95,7 +95,9 @@ class ReviewModel:
                     normalized=dict(input_tokens=usage.get('promptTokenCount'),
                         output_tokens=(usage.get('candidatesTokenCount',0)+usage.get('thoughtsTokenCount',0)) if usage else None)
                 except (KeyError,IndexError,TypeError,ValueError,AttributeError):
-                    raise ModelError('Model returned an invalid or incomplete response') from None
+                    reason=candidate.get('finishReason') if isinstance(locals().get('candidate'),dict) else None
+                    suffix=f' ({reason})' if reason in ('MAX_TOKENS','SAFETY','RECITATION','MALFORMED_FUNCTION_CALL') else ''
+                    raise ModelError('Model returned an invalid or incomplete response'+suffix) from None
                 self.budget.usage.append(normalized)
                 return ModelResult(message,text,calls,normalized)
             error_text=json.dumps(data).lower()

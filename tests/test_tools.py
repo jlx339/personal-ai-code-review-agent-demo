@@ -60,3 +60,10 @@ def test_partial_reads_and_search_do_not_leak_private_key_interior():
 def test_large_syntax_inventory_marks_incomplete_output():
     t=tools('\n'.join(f'def f{i}(): pass' for i in range(101)))
     assert t.inspect_python('app.py').truncated
+
+
+def test_read_source_can_request_a_window_larger_than_short_file():
+    result=tools('x=1\n').read_source('app.py',1,100)
+    assert result.ok
+    assert result.data['content']=='x=1'
+    assert result.data['end_line']==1
