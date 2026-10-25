@@ -10,3 +10,12 @@ def test_partial_report_does_not_claim_clean_and_masks_secrets(tmp_path):
     assert 'PARTIAL' in md and 'No issues found' not in md
     assert 'Bandit unavailable' in md
     assert (tmp_path/'trace.json').is_file()
+
+
+def test_diagnostics_are_single_line_sanitized_json():
+    import json
+    from ai_review.report import diagnostic_summary
+    r=ReviewReport('me/demo',1,'a'*40,'b'*40,errors=['API_KEY="private-literal"'])
+    line=diagnostic_summary(r)
+    assert '\n' not in line and 'private-literal' not in line
+    assert json.loads(line)['status']=='partial'

@@ -54,13 +54,14 @@ def main(argv=None):
             from ai_review.snapshot import fetch_snapshot
             from ai_review.tools import SnapshotTools
             from ai_review.graph import run_analysis
-            from ai_review.report import save_report
+            from ai_review.report import save_report, diagnostic_summary
             model=ReviewModel(key,settings,RequestBudget(settings))
             snapshot=fetch_snapshot(client,request,settings)
             sha=subprocess.run(['git','rev-parse','HEAD'],capture_output=True,text=True,check=True).stdout.strip()
             metadata={'reviewer_sha':sha,'run_id':os.environ.get('GITHUB_RUN_ID','local')}
             report=run_analysis(snapshot,model,SnapshotTools(snapshot,client,settings),settings,metadata)
             save_report(report,args.output)
+            print('AI_REVIEW_DIAGNOSTICS='+diagnostic_summary(report))
             print(f'Review {report.status}: {len(report.findings)} candidates. Report: {args.output / "report.md"}')
             summary=os.environ.get('GITHUB_STEP_SUMMARY')
             if summary:

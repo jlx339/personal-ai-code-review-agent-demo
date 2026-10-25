@@ -71,3 +71,10 @@ def test_installed_langgraph_runs_the_full_node_sequence():
     result=build_review_graph(s.model,s.tools,s.settings).invoke({'completed':[]})
     assert result['completed']==['static_analysis','correctness','security','tests','validate','verify']
     assert result['report'].status=='complete'
+
+
+def test_model_failure_reason_is_visible_without_raw_response():
+    from ai_review.model import ModelError
+    s=session([ModelError('Model request failed (HTTP 400)')])
+    s.review('correctness')
+    assert 'HTTP 400' in s.errors[0]

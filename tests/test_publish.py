@@ -21,7 +21,7 @@ class PublishClient:
         if path.endswith('/pulls/1'):
             return {'head':{'sha':self.head,'repo':{'full_name':'me/demo'}},'state':'open','user':{'type':'User'},'base':{'repo':{'full_name':'me/demo'}}}
         if path.endswith('/actions/runs/42'):
-            return {'id':42,'event':'pull_request_target','status':'completed','conclusion':'success','head_sha':'d'*40,'head_branch':'main','path':'.github/workflows/analyze.yml','repository':{'full_name':'me/demo'}}
+            return {'id':42,'event':'pull_request_target','status':'completed','conclusion':'success','head_sha':'a'*40,'head_branch':'demo/review-sample','path':'.github/workflows/analyze.yml','repository':{'full_name':'me/demo'}, 'pull_requests':[{'number':1,'base':{'ref':'main','sha':'d'*40},'head':{'sha':'a'*40}}], 'referenced_workflows':[{'path':'me/demo/.github/workflows/review-job.yml@'+'d'*40,'sha':'d'*40,'ref':'refs/heads/main'}]}
         if path.endswith('/actions/runs/42/artifacts'):
             return {'artifacts':[{'id':9,'name':'ai-review-42','expired':False,'size_in_bytes':2000}]}
         if path.endswith('/repos/me/demo'):
@@ -106,3 +106,19 @@ def test_base_side_evidence_goes_into_review_body():
     assert result.status=='posted'
     assert not c.posts[0].get('comments')
     assert 'app.py:1' in c.posts[0]['body']
+
+
+def test_pr_target_run_uses_base_revision_not_pr_head_as_reviewer_identity():
+    c=PublishClient()
+    original=c.get
+    def get(path):
+        if path.endswith('/actions/runs/42'):
+            return {'id':42,'event':'pull_request_target','status':'completed','conclusion':'success',
+                'head_sha':'a'*40,'head_branch':'demo/review-sample','path':'.github/workflows/analyze.yml',
+                'repository':{'full_name':'me/demo'},
+                'pull_requests':[{'number':1,'base':{'ref':'main','sha':'d'*40},'head':{'sha':'a'*40}}],
+                'referenced_workflows':[{'path':'me/demo/.github/workflows/review-job.yml@'+'d'*40,
+                    'sha':'d'*40,'ref':'refs/heads/main'}]}
+        return original(path)
+    c.get=get
+    assert load_verified_report(c,'me/demo','42','.github/workflows/analyze.yml').reviewer_sha=='d'*40

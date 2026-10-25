@@ -21,7 +21,6 @@ def load_verified_report(client,repository,run_id,expected_workflow):
     if (str(run['id'])!=str(run_id) or run.get('repository',{}).get('full_name')!=repository
             or run.get('event') not in ('pull_request_target','workflow_dispatch')
             or run.get('status')!='completed' or run.get('conclusion')!='success'
-            or run.get('head_branch')!=metadata['default_branch']
             or run.get('path','').split('@')[0]!=expected_workflow):
         raise ValueError('Untrusted analysis workflow run')
     artifacts=client.get(f'{prefix}/actions/runs/{run_id}/artifacts')['artifacts']
@@ -42,8 +41,24 @@ def load_verified_report(client,repository,run_id,expected_workflow):
         if [x.filename for x in entries].count('report.json')!=1:
             raise ValueError('Report file missing or duplicated')
         report=ReviewReport.from_json(archive.read('report.json').decode('utf-8'))
-    if report.repository!=repository or report.run_id!=str(run_id) or report.reviewer_sha!=run['head_sha']:
+    if report.repository!=repository or report.run_id!=str(run_id):
         raise ValueError('Report identity does not match trusted run')
+    default=metadata['default_branch']
+    worker_path=f'{repository}/.github/workflows/review-job.yml@{report.reviewer_sha}'
+    trusted_workers=[w for w in run.get('referenced_workflows',[])
+        if w.get('path')==worker_path and w.get('sha')==report.reviewer_sha
+        and w.get('ref')==f'refs/heads/{default}']
+    if len(trusted_workers)!=1:
+        raise ValueError('Trusted reviewer workflow revision not established')
+    if run['event']=='pull_request_target':
+        prs=[pr for pr in run.get('pull_requests',[]) if pr.get('number')==report.pr_number]
+        if (len(prs)!=1 or prs[0].get('base',{}).get('ref')!=default
+                or prs[0].get('base',{}).get('sha')!=report.reviewer_sha
+                or prs[0].get('head',{}).get('sha')!=report.head_sha
+                or run.get('head_sha')!=report.head_sha):
+            raise ValueError('PR report does not match trusted base and reviewed head')
+    elif run.get('head_branch')!=default or run.get('head_sha')!=report.reviewer_sha:
+        raise ValueError('Manual analysis did not run from the default branch')
     if not re.fullmatch('[a-f0-9]{20}',report.report_id):
         raise ValueError('Invalid report identifier')
     return report

@@ -7,6 +7,8 @@ import time
 from ai_review.schemas import CATEGORIES, Finding, ReviewReport
 from ai_review.redaction import redact_source
 from ai_review.validation import validate_findings
+from ai_review.model import ModelError
+from ai_review.budget import BudgetExceeded
 
 TOOL_SCHEMAS=[
     dict(name='read_source',description='Read 1-based inclusive source lines at the pinned commit; max 200 lines.',parameters={'type':'object','properties':{'path':{'type':'string'},'source':{'type':'string','enum':['head','base']},'start_line':{'type':'integer'},'end_line':{'type':'integer'}},'required':['path','start_line','end_line']}),
@@ -101,7 +103,8 @@ class ReviewSession:
                 'detail':f'{len(parsed)} candidates; tool investigation '+('completed' if used else 'missing')}
         except (RuntimeError,ValueError,TypeError,KeyError) as exc:
             self.checks[category]={'status':'partial','detail':type(exc).__name__}
-            self.errors.append(f'{category} reviewer incomplete: {type(exc).__name__}')
+            reason=str(exc) if isinstance(exc,(ModelError,BudgetExceeded)) else type(exc).__name__
+            self.errors.append(f'{category} reviewer incomplete: {reason}')
         self.trace.append({'reviewer':category,'check':self.checks[category]})
 
     def validate(self):
