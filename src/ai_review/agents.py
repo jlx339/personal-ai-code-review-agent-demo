@@ -110,7 +110,11 @@ class ReviewSession:
         try:
             instruction=(Path(__file__).parent/'prompts'/f'{category}.md').read_text()
             before=len(self.tools.failures)
-            result,used=self._loop(instruction+'\n'+OUTPUT_INSTRUCTION,self.context(),self.settings.specialist_turns,FINDINGS_SCHEMA)
+            schema=json.loads(json.dumps(FINDINGS_SCHEMA))
+            schema['properties']['findings']['items']['properties']['category']['enum']=[category]
+            instruction+=f'\nYour assigned category is {category}. Report ONLY {category} findings; leave all other categories to their specialists.'
+            output_instruction=OUTPUT_INSTRUCTION.replace('correctness|security|tests',category)
+            result,used=self._loop(instruction+'\n'+output_instruction,self.context(),self.settings.specialist_turns,schema)
             items=result.get('findings')
             if not isinstance(items,list) or len(items)>15:
                 raise ValueError('Missing/oversized findings list')

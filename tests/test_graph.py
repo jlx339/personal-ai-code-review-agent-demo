@@ -78,3 +78,16 @@ def test_model_failure_reason_is_visible_without_raw_response():
     s=session([ModelError('Model request failed (HTTP 400)')])
     s.review('correctness')
     assert 'HTTP 400' in s.errors[0]
+
+
+def test_final_output_schema_is_bound_to_each_reviewers_category():
+    s=session([tool(),tool(),text('{"findings":[]}')])
+    original=s.model.invoke
+    schemas=[]
+    def invoke(*args,**kwargs):
+        if kwargs.get('response_schema'):
+            schemas.append(kwargs['response_schema'])
+        return original(*args,**kwargs)
+    s.model.invoke=invoke
+    s.review('tests')
+    assert schemas[0]['properties']['findings']['items']['properties']['category']['enum']==['tests']
