@@ -58,17 +58,17 @@ class ReviewSession:
         data['static_analysis']=getattr(self,'static_results',None)
         return json.dumps(data)
 
-    def _loop(self,system,content,turns,schema=None,require_tool=False):
+    def _loop(self,system,content,turns,schema=None,require_tool=False,validate_output=None,structured_only=False):
         messages=[{'role':'user','parts':[{'text':content}]}]
         used_tool=False
         repaired=False
         for turn in range(turns):
             last=turn==turns-1
-            response=self.model.invoke(messages,tools=None if last else TOOL_SCHEMAS,
-                response_schema=schema if last else None,system=system)
+            response=self.model.invoke(messages,tools=None if last or structured_only else TOOL_SCHEMAS,
+                response_schema=schema if last or structured_only else None,system=system)
             messages.append(response.message)
             if response.tool_calls:
-                if last or len(response.tool_calls)>self.settings.max_tool_calls:
+                if last or structured_only or len(response.tool_calls)>self.settings.max_tool_calls:
                     raise ValueError('Tool/turn budget exceeded')
                 results=[]
                 for call in response.tool_calls:
@@ -91,12 +91,14 @@ class ReviewSession:
                 result=json.loads(raw)
                 if not isinstance(result,dict):
                     raise ValueError('Expected object')
+                if validate_output:
+                    validate_output(result)
                 return result,used_tool
-            except (ValueError,IndexError):
+            except (ValueError,IndexError) as exc:
                 if repaired or last:
-                    raise ValueError('Malformed structured output') from None
+                    raise ValueError(f'Malformed structured output: {exc}') from None
                 repaired=True
-                messages.append({'role':'user','parts':[{'text':'Return a valid JSON object matching the required format; do not repeat invalid output.'}]})
+                messages.append({'role':'user','parts':[{'text':f'Return valid JSON matching the required format. Validation failed: {exc}. Correct it within the required schema; include every requested decision.'}]})
         raise ValueError('No final response before turn limit')
 
     def review(self,category):
@@ -153,13 +155,21 @@ class ReviewSession:
                     windows.append(dict(path=e.path,source=e.source,start_line=start,
                         content='\n'.join(f'{n}: {lines[n-1]}' for n in range(start,end+1))))
             payload=dict(candidates=[asdict(f) for f in self.findings],source_context=windows)
-            result,_=self._loop(instruction,json.dumps(payload),self.settings.verifier_turns,DECISIONS_SCHEMA)
-            decisions=result.get('decisions')
-            if not isinstance(decisions,list) or len(decisions)!=len(self.findings):
-                raise ValueError('Incomplete verification')
+            def check_output(result):
+                decisions=result.get('decisions')
+                if not isinstance(decisions,list) or len(decisions)!=len(self.findings):
+                    raise ValueError('Return one decision for every supplied finding ID, including rejected duplicates')
+                if any(not isinstance(d,dict) or not isinstance(d.get('id'),str) for d in decisions):
+                    raise ValueError('Invalid verification decision identity')
+                mapped={d['id']:d for d in decisions}
+                if set(mapped)!={f.id for f in self.findings} or any(d.get('status') not in ('supported','rejected') or d.get('category') not in CATEGORIES or d.get('severity') not in SEVERITIES or not isinstance(d.get('suggestion'),str) or not d['suggestion'].strip() or len(d['suggestion'])>12000 or not isinstance(d.get('reason'),str) or not d['reason'].strip() for d in decisions):
+                    raise ValueError('Every decision needs its supplied ID, valid status/category/severity, nonempty suggestion and reason')
+            schema=json.loads(json.dumps(DECISIONS_SCHEMA))
+            schema['properties']['decisions'].update(minItems=len(self.findings),maxItems=len(self.findings))
+            result,_=self._loop(instruction,json.dumps(payload),self.settings.verifier_turns,schema,
+                validate_output=check_output,structured_only=True)
+            decisions=result['decisions']
             mapped={d['id']:d for d in decisions}
-            if set(mapped)!={f.id for f in self.findings} or any(d.get('status') not in ('supported','rejected') or d.get('category') not in CATEGORIES or d.get('severity') not in SEVERITIES or not isinstance(d.get('suggestion'),str) or not d['suggestion'].strip() or len(d['suggestion'])>12000 or not isinstance(d.get('reason'),str) or not d['reason'].strip() for d in decisions):
-                raise ValueError('Invalid verification decisions')
             for f in self.findings:
                 decision=mapped[f.id]
                 f.category=decision['category']
@@ -178,7 +188,7 @@ class ReviewSession:
             self.checks['verifier']={'status':'complete','detail':'All candidates assessed'}
         except (RuntimeError,ValueError,TypeError,KeyError) as exc:
             self.checks['verifier']={'status':'partial','detail':type(exc).__name__}
-            self.errors.append('Verifier incomplete; candidates are not publishable')
+            self.errors.append(f'Verifier incomplete; candidates are not publishable: {exc}')
 
     def finish(self):
         required=(*CATEGORIES,'verifier','static_analysis')

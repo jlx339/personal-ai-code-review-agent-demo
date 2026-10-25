@@ -121,7 +121,7 @@ def test_invalid_verifier_category_cannot_make_a_candidate_publishable():
     from ai_review.validation import validate_findings
     issue = validate_findings(snapshot(), [finding()]).retained[0]
     s = session([text(json.dumps({'decisions': [{'id': issue.id, 'status': 'supported',
-        'category': 'made-up', 'severity': 'high', 'suggestion': 'Correct the affected behavior', 'reason': 'Claimed support'}]}))])
+        'category': 'made-up', 'severity': 'high', 'suggestion': 'Correct the affected behavior', 'reason': 'Claimed support'}]}))]*2)
     s.findings = [issue]
     s.verify()
     assert issue.verification_status == 'unverified'
@@ -200,7 +200,19 @@ def test_invalid_verifier_severity_keeps_all_candidates_unverified():
     from ai_review.validation import validate_findings
     issue=validate_findings(snapshot(),[finding()]).retained[0]
     s=session([text(json.dumps({'decisions':[dict(id=issue.id,status='supported',category='correctness',
-        severity='extreme',suggestion='Fix it',reason='Claimed support')]}))])
+        severity='extreme',suggestion='Fix it',reason='Claimed support')]}))]*2)
     s.findings=[issue];s.verify()
     assert issue.verification_status=='unverified'
     assert s.checks['verifier']['status']=='partial'
+
+
+def test_verifier_repairs_a_missing_decision_before_accepting_the_batch():
+    from test_validation import finding, snapshot
+    from ai_review.validation import validate_findings
+    issue=validate_findings(snapshot(),[finding()]).retained[0]
+    valid=dict(id=issue.id,status='supported',category='correctness',severity='medium',
+        suggestion='Fix the behavior and add a regression test.',reason='Source supports failure')
+    s=session([text('{"decisions":[]}'),text(json.dumps({'decisions':[valid]}))])
+    s.snapshot=snapshot();s.findings=[issue];s.verify()
+    assert issue.verification_status=='supported'
+    assert s.checks['verifier']['status']=='complete'
