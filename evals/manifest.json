@@ -1,5 +1,5 @@
 {
-  "status": "Distinct sample correction: case-286 is byte-identical to case-335 and excluded from aggregate scoring. Third distinct sample pending.",
+  "status": "Three distinct real-code samples executed; quality target not met. See evals/results/follow-up.json.",
   "method": "Three distinct full unmodified historical Python files from two MIT projects, introduced as new files in owned disposable PRs. Original introducing diffs are not reproduced. Expected labels precede execution. Repeated byte-identical source is excluded from distinct-sample counts. Correctness-focused; no security or benign-case performance claim.",
   "samples": [
     {
@@ -16,10 +16,13 @@
       "evaluation_path": "eval_samples/case_335/deep_researcher.py",
       "expected_issues_file": "evals/expected/case-335.expected.json",
       "provenance_file": "evals/expected/case-335.json",
-      "status": "baseline partial; follow-up pending",
+      "status": "executed; partial; no pre-labeled issue matched",
       "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/2",
       "initial_evaluation_head": "0f44bbfa80dd570422ec0faed929157abc138707",
-      "baseline_run_id": 40168318624
+      "baseline_run_id": 40168318624,
+      "source_sha256": "af128d5d8773008d021b6ef7562e9fb90a45f7eb5e886483d1e6e835223275e0",
+      "latest_evaluation_head": "259f2f47e8141220c8f7072521906eb9e0e1b5fb",
+      "latest_run_id": 40168632697
     },
     {
       "id": "case-299",
@@ -35,10 +38,13 @@
       "evaluation_path": "eval_samples/case_299/multi_agent.py",
       "expected_issues_file": "evals/expected/case-299.expected.json",
       "provenance_file": "evals/expected/case-299.json",
-      "status": "baseline partial; follow-up pending",
+      "status": "executed; partial; no pre-labeled issue matched",
       "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/4",
       "initial_evaluation_head": "4540c4909e33b8747a3b304654394d50b56e3524",
-      "baseline_run_id": 40168490335
+      "baseline_run_id": 40168490335,
+      "source_sha256": "84a72b85f2c7e74b691fbc81362f9f840b08b9ec4908b6e66bcf7c95c262e9f0",
+      "latest_evaluation_head": "bf13f570ac8653721677ee40eaefe9064bf5a75c",
+      "latest_run_id": 40168831878
     },
     {
       "id": "case-38845",
@@ -54,7 +60,11 @@
       "evaluation_path": "eval_samples/case_38845/tool_retry.py",
       "expected_issues_file": "evals/expected/case-38845.expected.json",
       "provenance_file": "evals/expected/case-38845.json",
-      "status": "prepared; execution pending"
+      "status": "executed; partial; no pre-labeled issue matched",
+      "source_sha256": "914bcc26a4e3757883d5fe223c33dd6eb894ec27db40bc2b92d1aadd7b8f8ce4",
+      "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/5",
+      "latest_evaluation_head": "eae54c48a9ed5a1dab2386306cadd31065f0ed35",
+      "latest_run_id": 40169020180
     }
   ],
   "required_samples": 3,
@@ -77,7 +87,8 @@
       "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/3",
       "initial_evaluation_head": "70b6e512ad98f0e90919ba18959e23c5cb01527e",
       "baseline_run_id": 40168419115,
-      "reason": "Source is byte-identical to case-335 despite a different upstream base SHA. Retained as repeated measurement, not a distinct sample."
+      "reason": "Source is byte-identical to case-335 despite a different upstream base SHA. Retained as repeated measurement, not a distinct sample.",
+      "source_sha256": "af128d5d8773008d021b6ef7562e9fb90a45f7eb5e886483d1e6e835223275e0"
     }
   ]
 }

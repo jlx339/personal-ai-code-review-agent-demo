@@ -57,7 +57,8 @@
             "verification": "supported"
           }
         ]
-      }
+      },
+      "aggregate_eligible": true
     },
     {
       "id": "case-286",
@@ -100,7 +101,8 @@
           "elapsed_seconds": 32.24
         },
         "findings": []
-      }
+      },
+      "aggregate_eligible": false
     },
     {
       "id": "case-299",
@@ -139,11 +141,12 @@
           "elapsed_seconds": 21.54
         },
         "findings": []
-      }
+      },
+      "aggregate_eligible": true
     }
   ],
   "expected_high_issues_found": 0,
-  "expected_high_issues_total": 3,
+  "expected_high_issues_total": 2,
   "unexpected_supported_finding": "case-335 found the same unconditional exception handler independently labeled in case-286. Assistant source inspection supports it; full artifact remains available for owner review.",
   "limits": "All reports partial. Same project; two files overlap. Reference fixes unmerged. Baseline misses retained even after later iterations.",
   "distinct_sample_count": 2,

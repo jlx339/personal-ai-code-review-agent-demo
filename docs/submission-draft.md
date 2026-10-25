@@ -20,9 +20,9 @@ The current model is Gemini 3.5 Flash Lite, using the owner's configured free ti
 
 The small synthetic PR #1 deliberately changes an AI response parser and removes a path containment check. It tests the workflow and approval boundary; it does not count as a real-code benchmark.
 
-Three historical real Python samples come from the MIT-licensed `langchain-ai/open_deep_research` project. Exact source SHAs, original paths, upstream fix references, pre-run expected issues, and licensing are stored under `evals/`. Each evaluation PR adds an unchanged historical buggy source file. This evaluates real code, but does not recreate the original bug-introducing diff. Supporting modules are not copied. All three samples come from one project and mainly assess correctness; the dataset cannot establish broad security or benign-change performance.
+Three distinct historical real Python samples come from the MIT-licensed `langchain-ai/open_deep_research` and `langchain-ai/langchain` projects. Exact source SHAs, content hashes, original paths, upstream fix references, pre-run expected issues, and licensing are stored under `evals/`. Each evaluation PR adds an unchanged historical buggy source file. This evaluates real code, but does not recreate the original bug-introducing diff. Supporting modules are not copied. The samples mainly assess correctness; the dataset cannot establish broad security or benign-change performance. One byte-identical candidate was detected by a content comparison and excluded from distinct-sample counts; its runs remain recorded as repeats.
 
-The reference fixes concern use of the wrong model setting during token-limit recovery, swallowed child-research errors, and premature final writing while research sections remain incomplete. Their upstream PRs were unmerged when selected, so expected issues are manually assessed source-based labels rather than claims of maintainer-confirmed ground truth. The exact labels were recorded before running the model.
+The reference fixes concern use of the wrong model setting during token-limit recovery, premature final writing while research sections remain incomplete, and handling tool exceptions excluded by a retry filter. Two upstream fixes were unmerged when selected and one was merged. Expected issues are source-based labels rather than a claim that every upstream proposal is correct. The exact labels were recorded before running the model.
 
 ## AI-assisted coding prompts
 
@@ -43,17 +43,17 @@ Live model runs exposed oversized responses, overly broad output categories, sho
 
 Live GitHub publication exposed differences between PR metadata and the trusted reusable-workflow revision. Publication now verifies these independently. The owner successfully selected and published both supported synthetic findings in run 40167781789; the posted review is linked in `docs/live-demo.md`.
 
-A reliability pass added independent verifier category assignment, correct finding identities after category changes, exact duplicate merging, recalculated inline anchors, readable Markdown quotes, and explicit prompt/scanner truncation. Regression tests reproduced each known defect before its fix. The latest local suite has 74 passing tests with no skips, including real LangGraph execution and package building. Those tests check application behavior; they do not prove model judgments correct.
+A reliability pass added independent verifier category assignment, correct finding identities after category changes, exact duplicate merging, recalculated inline anchors, readable Markdown quotes, and explicit prompt/scanner truncation. Regression tests reproduced each known defect before its fix. Specialists now receive an investigation request when they try to end early without tools. The latest local suite has 75 passing tests with no skips, including real LangGraph execution and package building. Those tests check application behavior; they do not prove model judgments correct.
 
 ## Results and limitations
 
-See `docs/evaluation.md` and the committed evaluation results for the final three-sample outcome. Keep misses, partial results, and false positives visible. Assistant-assessed judgments require owner review before they are described as human benchmark labels.
+All three distinct reports were partial. None matched the three pre-labeled high-severity targets; none matched the additional medium target. One other source-supported exception-handling finding was retained. Its severity and suggested fix also need human inspection. Requiring investigation improved specialist tool use, but did not meet the detection target. See `docs/evaluation.md` and the committed baseline/follow-up diagnostics. Assistant-assessed judgments require owner review before they are described as human benchmark labels; human-labeled precision remains undefined.
 
 The workflow already demonstrates read-only analysis, source-grounded findings, failure reporting, and owner-selected publication. The model can miss genuine bugs or assign the wrong category, even when a workflow completes successfully. No claim of bug-free software or guaranteed detection is made. Coverage means inspection of tests and missing-test suggestions; reviewed code is not executed to measure runtime coverage.
 
 ## Submission checklist
 
 - Public GitHub code: available at the repository link above.
-- Three-real-sample results: record all three runs and their actual outcomes in the evaluation document.
+- Three-real-sample results: recorded, with misses and partial reports visible; the quality target is not met.
 - Google Doc: copy this draft into a Google Doc, check the final results, and share its link.
 - Video: record at most five minutes using `docs/demo-script.md`, showing a genuine report, owner approval, published findings, and one limitation.
