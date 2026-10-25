@@ -38,3 +38,14 @@ def test_diagnostic_finding_contains_sanitized_evidence_for_remote_evaluation():
     assert payload['evidence'][0]['excerpt'] == r.findings[0].evidence[0].excerpt
     assert payload['explanation'] == r.findings[0].explanation
     assert 'private-literal' not in result
+
+
+def test_remote_diagnostics_explain_verifier_rejections_without_exposing_secrets():
+    import json
+    from ai_review.report import diagnostic_summary
+    r=ReviewReport('me/demo',1,'a'*40,'b'*40,trace=[{'verifier_decisions':[
+        {'id':'example','status':'rejected','reason':'API_KEY="private-literal"; trigger does not change defaults'}]}])
+    result=diagnostic_summary(r)
+    assert json.loads(result)['verification_decisions'][0]['status']=='rejected'
+    assert 'trigger does not change defaults' in result
+    assert 'private-literal' not in result

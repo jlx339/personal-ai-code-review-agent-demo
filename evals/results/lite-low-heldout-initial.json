@@ -1,0 +1,97 @@
+{
+  "phase": "Initial Lite LOW comparison",
+  "run_id": 40172553220,
+  "diagnostics": {
+    "status": "complete",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "2 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "All candidates assessed"
+      }
+    },
+    "errors": [],
+    "scope_notes": [],
+    "usage": {
+      "requests": 10,
+      "input_tokens": 31905,
+      "output_tokens": 1390,
+      "model_requests": {
+        "gemini-3.5-flash-lite": 10
+      },
+      "review_profile": {
+        "primary_model": "gemini-3.5-flash-lite",
+        "reasoning_model": "gemini-3.5-flash-lite",
+        "reasoning_thinking": "LOW"
+      },
+      "elapsed_seconds": 46.43
+    },
+    "findings": [
+      {
+        "id": "83bfbe10ef51",
+        "title": "Filtering truthy values in from_runnable_config drops boolean configuration fields set to False",
+        "category": "correctness",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_311/configuration.py",
+        "line": 62,
+        "verification": "supported",
+        "end_line": 67,
+        "evidence": [
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 62,
+            "end_line": 67,
+            "excerpt": "        values: dict[str, Any] = {\n            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))\n            for f in fields(cls)\n            if f.init\n        }\n        return cls(**{k: v for k, v in values.items() if v})",
+            "source": "source"
+          }
+        ],
+        "impact": "Configuration options with boolean values defaulting to or explicitly set to False are filtered out because False is falsy, causing them to unexpectedly revert to dataclass default values.",
+        "preconditions": "Calling from_runnable_config when a boolean config option is passed via configurable or env vars.",
+        "explanation": "In Python, bool values like False evaluate to falsy in boolean contexts. The expression if v drops any configuration key whose resolved value is False.",
+        "suggestion": "return cls(**{k: v for k, v in values.items() if v is not None})"
+      },
+      {
+        "id": "4ff9c62a5629",
+        "title": "Environment variables are retrieved as raw strings without type conversion",
+        "category": "correctness",
+        "severity": "medium",
+        "source": "head",
+        "path": "eval_samples/case_311/configuration.py",
+        "line": 63,
+        "verification": "rejected",
+        "end_line": 63,
+        "evidence": [
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 63,
+            "end_line": 63,
+            "excerpt": "            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))",
+            "source": "source"
+          }
+        ],
+        "impact": "Integer or boolean configuration fields loaded from environment variables remain strings, leading to type mismatches.",
+        "preconditions": "Configuring settings via environment variables.",
+        "explanation": "os.environ.get returns a string and it is passed directly into cls without coercion.",
+        "suggestion": "N/A"
+      }
+    ]
+  },
+  "assistant_assessment": "Complete run; core falsey-value filter exists, but the supported finding focuses on False fields whose defaults are already False. Do not count that trigger as proven. Genuine environment-type candidate was rejected; the prior diagnostic did not expose its reason. Next iteration gives verifier full bounded context and records reasons.",
+  "owner_judgment_pending": true
+}

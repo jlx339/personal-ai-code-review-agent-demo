@@ -36,3 +36,11 @@ def test_unicode_separator_inside_a_secret_does_not_change_physical_source_lines
     assert block['end_line']==2
     assert '2: x = 1' in block['content']
     assert 'a\u2028b' not in block['content']
+
+
+def test_changed_function_context_includes_local_callers_and_callback_wiring():
+    source='def changed(items):\n    return items[0]\n'+('\n'*40)+'def caller():\n    return changed([1])\n'+('\n'*40)+'graph.add_conditional_edges("source", changed)\n'
+    s=snapshot(source,[2]);c=EvidenceCatalog(s)
+    data=json.loads(build_context(s,c));text='\n'.join(b['content'] for b in data['files'][0]['head_source'])
+    assert 'def caller()' in text
+    assert 'graph.add_conditional_edges' in text

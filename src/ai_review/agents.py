@@ -57,6 +57,7 @@ class ReviewSession:
         self.started=time.monotonic()
         self.dependency_ranges=None
         self.dependency_context=[]
+        self.review_context={}
 
     def context(self):
         if self.dependency_ranges is None:
@@ -64,6 +65,7 @@ class ReviewSession:
         data=json.loads(build_context(self.snapshot,self.tools.evidence,related_ranges=self.dependency_ranges))
         self.dependency_context=data['dependencies']
         data['static_analysis']=getattr(self,'static_results',None)
+        self.review_context=data
         return json.dumps(data)
 
     def _loop(self,system,content,turns,schema=None,require_tool=False,validate_output=None,structured_only=False,model=None):
@@ -165,7 +167,7 @@ class ReviewSession:
                     windows.append(dict(path=e.path,source=e.source,start_line=start,
                         content='\n'.join(f'{n}: {lines[n-1]}' for n in range(start,end+1))))
             payload=dict(candidates=[asdict(f) for f in self.findings],source_context=windows,
-                imported_project_definitions=self.dependency_context)
+                imported_project_definitions=self.dependency_context,review_context=self.review_context)
             def check_output(result):
                 decisions=result.get('decisions')
                 if not isinstance(decisions,list) or len(decisions)!=len(self.findings):
@@ -181,8 +183,10 @@ class ReviewSession:
                 validate_output=check_output,structured_only=True,model=self.reasoning_model)
             decisions=result['decisions']
             mapped={d['id']:d for d in decisions}
+            assessments=[]
             for f in self.findings:
                 decision=mapped[f.id]
+                previous_id=f.id
                 f.category=decision['category']
                 f.severity=decision['severity']
                 f.suggestion=decision['suggestion']
@@ -190,12 +194,14 @@ class ReviewSession:
                 f.inline_eligible=(f.source=='head' and f.category!='tests'
                     and f.start_line in self.snapshot.files[f.path].added_lines)
                 assign_finding_id(f)
+                assessments.append(dict(id=f.id,previous_id=previous_id,status=decision['status'],
+                    category=f.category,severity=f.severity,reason=decision['reason']))
             unique={}
             for f in self.findings:
                 if f.id not in unique or f.verification_status=='supported':
                     unique[f.id]=f
             self.findings=list(unique.values())
-            self.trace.append({'verifier_decisions':[{k:d[k] for k in ('id','status','category','severity','reason')} for d in decisions]})
+            self.trace.append({'verifier_decisions':assessments})
             self.checks['verifier']={'status':'complete','detail':'All candidates assessed'}
         except (RuntimeError,ValueError,TypeError,KeyError) as exc:
             self.checks['verifier']={'status':'partial','detail':type(exc).__name__}

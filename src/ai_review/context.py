@@ -16,17 +16,29 @@ def _ranges(content,changed):
     # naturally retain the whole file; unrelated functions in small diffs stay out.
     windows=[(1,min(20,len(lines)))]
     try:
-        nodes=[n for n in ast.walk(ast.parse(content))
+        tree=ast.parse(content)
+        nodes=[n for n in ast.walk(tree)
             if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef))]
     except (SyntaxError,ValueError):
+        tree=None
         nodes=[]
+    affected=set()
     for point in points:
         enclosing=[n for n in nodes if n.lineno<=point<=n.end_lineno]
         if enclosing:
             node=min(enclosing,key=lambda n:n.end_lineno-n.lineno)
+            affected.add(node.name)
             windows.append((max(1,node.lineno-3),min(len(lines),node.end_lineno+3)))
         else:
             windows.append((max(1,point-12),min(len(lines),point+12)))
+    for node in nodes:
+        if node.name not in affected and any(isinstance(n,ast.Name) and n.id in affected for n in ast.walk(node)):
+            windows.append((max(1,node.lineno-3),min(len(lines),node.end_lineno+3)))
+    for node in tree.body if tree else []:
+        if not isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)) and any(
+                (isinstance(n,ast.Name) and n.id in affected) or (isinstance(n,ast.Constant) and isinstance(n.value,str) and n.value in affected)
+                for n in ast.walk(node)):
+            windows.append((max(1,node.lineno-3),min(len(lines),node.end_lineno+3)))
     merged=[]
     for start,end in sorted(windows):
         if merged and start<=merged[-1][1]+1:

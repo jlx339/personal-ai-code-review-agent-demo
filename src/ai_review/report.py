@@ -57,7 +57,9 @@ def save_report(report,output_dir:Path):
 def diagnostic_summary(report):
     """One-line sanitized status for remote troubleshooting without raw messages."""
     return json.dumps(sanitize(dict(status=report.status,checks=report.checks,errors=report.errors,
-        scope_notes=report.scope_notes,usage=report.usage,findings=[dict(id=f.id,
+        scope_notes=report.scope_notes,usage=report.usage,
+        verification_decisions=[d for entry in report.trace for d in entry.get('verifier_decisions',[])],
+        findings=[dict(id=f.id,
         title=f.title,category=f.category,severity=f.severity,source=f.source,path=f.path,
         line=f.start_line,verification=f.verification_status,end_line=f.end_line,
         evidence=[asdict(e) for e in f.evidence],impact=f.impact,preconditions=f.preconditions,
