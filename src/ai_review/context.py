@@ -36,7 +36,7 @@ def _ranges(content,changed):
     return merged
 
 
-def build_context(snapshot,catalog,limit=60000):
+def build_context(snapshot,catalog,limit=60000,related_ranges=None):
     files=[]
     remaining=limit
     for f in list(snapshot.files.values()):
@@ -75,4 +75,30 @@ def build_context(snapshot,catalog,limit=60000):
             snapshot.scope_notes.append(note)
         item['truncated']=truncated
         files.append(item)
-    return json.dumps(dict(files=files,scope_notes=snapshot.scope_notes))
+    dependencies=[]
+    dependency_budget=min(remaining,12000)
+    for path,ranges in (related_ranges or {}).items():
+        lines=source_lines(redact_source(snapshot.files[path].content))
+        for start,end in ranges:
+            cursor=start
+            while cursor<=end:
+                last=cursor-1
+                chars=0
+                for n in range(cursor,min(end,cursor+199)+1):
+                    cost=len(str(n))+2+len(lines[n-1])+1
+                    if chars+cost>dependency_budget:
+                        break
+                    chars+=cost
+                    last=n
+                if last<cursor:
+                    break
+                block=catalog.register(path,'head',cursor,last)
+                block['content']='\n'.join(f'{n}: {lines[n-1]}' for n in range(cursor,last+1))
+                dependencies.append(block)
+                dependency_budget-=chars
+                cursor=last+1
+            if cursor<=end:
+                note=f'Dependency context truncated: {path}'
+                if note not in snapshot.scope_notes:
+                    snapshot.scope_notes.append(note)
+    return json.dumps(dict(files=files,dependencies=dependencies,scope_notes=snapshot.scope_notes))

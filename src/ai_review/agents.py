@@ -11,6 +11,7 @@ from ai_review.validation import validate_findings, assign_finding_id
 from ai_review.model import ModelError
 from ai_review.budget import BudgetExceeded
 from ai_review.context import build_context
+from ai_review.dependencies import load_dependencies
 
 TOOL_SCHEMAS=[
     dict(name='read_source',description='Read 1-based inclusive source lines at the pinned commit; max 200 lines.',parameters={'type':'object','properties':{'path':{'type':'string'},'source':{'type':'string','enum':['head','base']},'start_line':{'type':'integer'},'end_line':{'type':'integer'}},'required':['path','start_line','end_line']}),
@@ -54,9 +55,14 @@ class ReviewSession:
         self.findings=[]
         self.trace=[]
         self.started=time.monotonic()
+        self.dependency_ranges=None
+        self.dependency_context=[]
 
     def context(self):
-        data=json.loads(build_context(self.snapshot,self.tools.evidence))
+        if self.dependency_ranges is None:
+            self.dependency_ranges=load_dependencies(self.snapshot,self.tools)
+        data=json.loads(build_context(self.snapshot,self.tools.evidence,related_ranges=self.dependency_ranges))
+        self.dependency_context=data['dependencies']
         data['static_analysis']=getattr(self,'static_results',None)
         return json.dumps(data)
 
@@ -157,7 +163,8 @@ class ReviewSession:
                     start=max(1,e.start_line-15);end=min(len(lines),e.end_line+15)
                     windows.append(dict(path=e.path,source=e.source,start_line=start,
                         content='\n'.join(f'{n}: {lines[n-1]}' for n in range(start,end+1))))
-            payload=dict(candidates=[asdict(f) for f in self.findings],source_context=windows)
+            payload=dict(candidates=[asdict(f) for f in self.findings],source_context=windows,
+                imported_project_definitions=self.dependency_context)
             def check_output(result):
                 decisions=result.get('decisions')
                 if not isinstance(decisions,list) or len(decisions)!=len(self.findings):
