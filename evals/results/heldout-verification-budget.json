@@ -1,0 +1,79 @@
+{
+  "phase": "Configuration comparison before verifier request reservation",
+  "run_id": 40171996180,
+  "pr": 6,
+  "head": "8cc8478401003c03219f973e5357ebba1173b33c",
+  "diagnostics": {
+    "status": "partial",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "partial",
+        "detail": "BudgetExceeded"
+      }
+    },
+    "errors": [
+      "Verifier incomplete; candidates are not publishable: Model request budget exhausted"
+    ],
+    "scope_notes": [],
+    "usage": {
+      "requests": 12,
+      "input_tokens": null,
+      "output_tokens": null,
+      "model_requests": {
+        "gemini-3.6-flash": 7,
+        "gemini-3.5-flash-lite": 5
+      },
+      "elapsed_seconds": 115.85
+    },
+    "findings": [
+      {
+        "id": "be377f4aa394",
+        "title": "Falsy configuration values filtered out during instantiation",
+        "category": "correctness",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_311/configuration.py",
+        "line": 54,
+        "verification": "unverified",
+        "end_line": 67,
+        "evidence": [
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 54,
+            "end_line": 67,
+            "excerpt": "    @classmethod\n    def from_runnable_config(\n        cls, config: Optional[RunnableConfig] = None\n    ) -> \"Configuration\":\n        \"\"\"Create a Configuration instance from a RunnableConfig.\"\"\"\n        configurable = (\n            config[\"configurable\"] if config and \"configurable\" in config else {}\n        )\n        values: dict[str, Any] = {\n            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))\n            for f in fields(cls)\n            if f.init\n        }\n        return cls(**{k: v for k, v in values.items() if v})",
+            "source": "source"
+          },
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 90,
+            "end_line": 103,
+            "excerpt": "    @classmethod\n    def from_runnable_config(\n        cls, config: Optional[RunnableConfig] = None\n    ) -> \"MultiAgentConfiguration\":\n        \"\"\"Create a MultiAgentConfiguration instance from a RunnableConfig.\"\"\"\n        configurable = (\n            config[\"configurable\"] if config and \"configurable\" in config else {}\n        )\n        values: dict[str, Any] = {\n            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))\n            for f in fields(cls)\n            if f.init\n        }\n        return cls(**{k: v for k, v in values.items() if v})",
+            "source": "source"
+          }
+        ],
+        "impact": "Explicitly configured falsy parameter values such as 0, False, or empty strings are discarded, causing the dataclass to fall back to default values instead of respecting user configuration.",
+        "preconditions": "A user or caller passes a falsy valid setting in `config[\"configurable\"]` or via environment variables (such as `number_of_queries=0`, `max_search_depth=0`, or `ask_for_clarification=False`).",
+        "explanation": "In `Configuration.from_runnable_config` (line 67) and `MultiAgentConfiguration.from_runnable_config` (line 103), the dictionary comprehension filters configuration values using `if v`. Since boolean `False`, integer `0`, and empty string `\"\"` evaluate to `False` in Python, these explicitly passed values are stripped out, causing `cls(**...)` to receive no value for those keys and fall back to class defaults.",
+        "suggestion": "Filter out `None` values specifically using `if v is not None` instead of `if v` in both dictionary comprehensions."
+      }
+    ]
+  },
+  "assessment": "Source-referenced falsey-value finding is valid but remains unverified because provider retries exhausted the global12-request budget. Do not publish. Next iteration reserves3 slots for verification while preserving the12-call total."
+}

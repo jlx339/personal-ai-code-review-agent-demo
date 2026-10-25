@@ -15,9 +15,11 @@ class RequestBudget:
         self.model_last={}
         self.model_calls={}
 
-    def admit(self,model=None,interval=None):
-        if self.calls>=self.settings.max_requests:
-            raise BudgetExceeded('Model request budget exhausted')
+    def admit(self,model=None,interval=None,reserve=0):
+        if type(reserve) is not int or not 0<=reserve<=self.settings.max_requests:
+            raise ValueError('Invalid request reservation')
+        if self.calls>=self.settings.max_requests-reserve:
+            raise BudgetExceeded('Model request budget reserved for verification' if reserve else 'Model request budget exhausted')
         now=self.clock()
         delay=max(0,self.settings.request_interval-(now-self.last)) if self.last is not None else 0
         if model in self.model_last:

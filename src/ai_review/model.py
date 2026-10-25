@@ -47,7 +47,7 @@ class ReviewModel:
         except (urllib.error.URLError,TimeoutError):
             return 503,{},{}
 
-    def invoke(self,messages,tools=None,response_schema=None,system=''):
+    def invoke(self,messages,tools=None,response_schema=None,system='',reserve_requests=0):
         if self.terminal_error:
             raise ModelError(self.terminal_error)
         reasoning=self.settings.model in ('gemini-3.6-flash','gemini-3.8-flash')
@@ -61,7 +61,7 @@ class ReviewModel:
         if tools:
             body['tools']=[{'functionDeclarations':tools}]
         for attempt in range(3):
-            self.budget.admit(self.settings.model,12.5 if reasoning else self.settings.request_interval)
+            self.budget.admit(self.settings.model,12.5 if reasoning else self.settings.request_interval,reserve=reserve_requests)
             try:
                 status,data,headers=(self.transport or self._send)(body)
             except (ValueError,UnicodeError):

@@ -73,7 +73,8 @@ class ReviewSession:
         for turn in range(turns):
             last=turn==turns-1
             response=(model or self.model).invoke(messages,tools=None if last or structured_only else TOOL_SCHEMAS,
-                response_schema=schema if last or structured_only else None,system=system)
+                response_schema=schema if last or structured_only else None,system=system,
+                reserve_requests=3 if require_tool else 0)
             messages.append(response.message)
             if response.tool_calls:
                 if last or structured_only or len(response.tool_calls)>self.settings.max_tool_calls:

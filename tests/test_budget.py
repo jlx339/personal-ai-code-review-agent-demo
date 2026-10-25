@@ -21,3 +21,12 @@ def test_model_specific_spacing_survives_calls_to_another_model():
     b.admit('strong',12.5)
     assert now[0]==12.5
     assert b.calls==3
+
+
+def test_specialists_cannot_consume_reserved_verification_requests():
+    b=RequestBudget(Settings(),clock=lambda:0,sleeper=lambda _:None)
+    for _ in range(9): b.admit(reserve=3)
+    with pytest.raises(BudgetExceeded): b.admit(reserve=3)
+    assert b.calls==9
+    for _ in range(3): b.admit()
+    assert b.calls==12
