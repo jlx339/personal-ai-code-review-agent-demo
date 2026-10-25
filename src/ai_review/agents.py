@@ -37,6 +37,8 @@ DECISIONS_SCHEMA={'type':'object','properties':{'decisions':{'type':'array','ite
     'type':'object','properties':{'id':_TEXT,'status':{'type':'string','enum':['supported','rejected']},
         'category':{'type':'string','enum':list(CATEGORIES)},
         'severity':{'type':'string','enum':list(SEVERITIES)},'suggestion':_TEXT,
+        'corrections':{'type':'object','properties':{k:_TEXT for k in ('title','impact','preconditions','explanation')},
+            'additionalProperties':False},
         'reason':_TEXT},'required':['id','status','category','severity','suggestion','reason'],'additionalProperties':False}}},
     'required':['decisions'],'additionalProperties':False}
 
@@ -177,6 +179,11 @@ class ReviewSession:
                 mapped={d['id']:d for d in decisions}
                 if set(mapped)!={f.id for f in self.findings} or any(d.get('status') not in ('supported','rejected') or d.get('category') not in CATEGORIES or d.get('severity') not in SEVERITIES or not isinstance(d.get('suggestion'),str) or not d['suggestion'].strip() or len(d['suggestion'])>12000 or not isinstance(d.get('reason'),str) or not d['reason'].strip() for d in decisions):
                     raise ValueError('Every decision needs its supplied ID, valid status/category/severity, nonempty suggestion and reason')
+                for d in decisions:
+                    corrections=d.get('corrections',{})
+                    if (not isinstance(corrections,dict) or not set(corrections)<= {'title','impact','preconditions','explanation'}
+                            or any(not isinstance(v,str) or not v.strip() or len(v)>12000 for v in corrections.values())):
+                        raise ValueError('Claim corrections may edit only bounded nonempty title/impact/preconditions/explanation text')
             schema=json.loads(json.dumps(DECISIONS_SCHEMA))
             schema['properties']['decisions'].update(minItems=len(self.findings),maxItems=len(self.findings))
             result,_=self._loop(instruction,json.dumps(payload),self.settings.verifier_turns,schema,
@@ -190,6 +197,8 @@ class ReviewSession:
                 f.category=decision['category']
                 f.severity=decision['severity']
                 f.suggestion=decision['suggestion']
+                for name,value in decision.get('corrections',{}).items():
+                    setattr(f,name,value)
                 f.verification_status=decision['status']
                 f.inline_eligible=(f.source=='head' and f.category!='tests'
                     and f.start_line in self.snapshot.files[f.path].added_lines)

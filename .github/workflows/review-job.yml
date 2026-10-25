@@ -50,7 +50,8 @@
           "env": {
             "GITHUB_TOKEN": "${{ github.token }}",
             "GEMINI_API_KEY": "${{ secrets.GEMINI_API_KEY }}",
-            "PR_NUMBER": "${{ inputs.pr_number }}"
+            "PR_NUMBER": "${{ inputs.pr_number }}",
+            "AI_REVIEW_REASONING_MODEL": "${{ vars.AI_REVIEW_REASONING_MODEL || 'gemini-3.5-flash-lite' }}"
           },
           "run": "uv run --locked ai-review analyze --pr \"$PR_NUMBER\" --output reports/current"
         },

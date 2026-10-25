@@ -217,3 +217,31 @@ def test_verifier_repairs_a_missing_decision_before_accepting_the_batch():
     s.snapshot=snapshot();s.findings=[issue];s.verify()
     assert issue.verification_status=='supported'
     assert s.checks['verifier']['status']=='complete'
+
+
+def test_verifier_can_narrow_an_inaccurate_claim_without_moving_source_evidence():
+    from test_validation import finding,snapshot
+    from ai_review.validation import validate_findings
+    issue=validate_findings(snapshot(),[finding()]).retained[0]
+    old_id=issue.id;quote=issue.evidence[0].excerpt
+    verdict=dict(id=old_id,status='supported',category='correctness',severity='medium',
+        suggestion='Preserve explicit overrides',reason='Numeric trigger is valid; boolean example is unsupported',
+        corrections=dict(title='Zero override ignored',preconditions='Explicit numeric override is zero',
+            impact='Default replaces the supplied numeric override',explanation='Truthiness filtering drops zero'))
+    s=session([text(json.dumps({'decisions':[verdict]}))]);s.snapshot=snapshot();s.findings=[issue];s.verify()
+    assert issue.title=='Zero override ignored'
+    assert issue.preconditions=='Explicit numeric override is zero'
+    assert issue.id!=old_id
+    assert issue.start_line==2 and issue.evidence[0].excerpt==quote
+    assert s.trace[-1]['verifier_decisions'][0]['previous_id']==old_id
+
+
+def test_verifier_corrections_cannot_change_the_source_anchor():
+    from test_validation import finding,snapshot
+    from ai_review.validation import validate_findings
+    issue=validate_findings(snapshot(),[finding()]).retained[0]
+    verdict=dict(id=issue.id,status='supported',category='correctness',severity='medium',
+        suggestion='Fix it',reason='Claimed support',corrections={'path':'other.py'})
+    s=session([text(json.dumps({'decisions':[verdict]}))]*2);s.findings=[issue];s.verify()
+    assert issue.path=='app.py'
+    assert issue.verification_status=='unverified'
