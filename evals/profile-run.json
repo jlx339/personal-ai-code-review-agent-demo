@@ -1,0 +1,10 @@
+{
+  "model": "gemini-3.8-flash",
+  "thinking": "HIGH",
+  "prs": [
+    2,
+    4,
+    5
+  ],
+  "purpose": "One controlled availability probe, then original-sample comparison if available; no labels passed to model and no publication."
+}
