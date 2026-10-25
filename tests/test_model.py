@@ -10,7 +10,7 @@ def model(transport):
 
 def test_model_uses_native_tool_calls_and_output_cap():
     def transport(body):
-        assert body['generationConfig']['maxOutputTokens'] == 2000
+        assert body['generationConfig']['maxOutputTokens'] == 4000
         assert body['tools'][0]['functionDeclarations'][0]['name'] == 'read_source'
         return 200, {'candidates':[{'content':{'role':'model','parts':[{'functionCall':{'name':'read_source','args':{'path':'a.py'}},'thoughtSignature':'opaque'}]}}],'usageMetadata':{'promptTokenCount':12,'candidatesTokenCount':5}}, {}
     result=model(transport).invoke([],tools=[{'name':'read_source','parameters':{'type':'object','properties':{}}}])

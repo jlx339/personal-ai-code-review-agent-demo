@@ -106,7 +106,7 @@ def test_verifier_corrects_category_and_updates_publication_identity():
     issue = validate_findings(snapshot(), [finding()]).retained[0]
     old_id = issue.id
     s = session([text(json.dumps({'decisions': [{'id': old_id, 'status': 'supported',
-        'category': 'security', 'reason': 'Unauthorized access is a security impact'}]}))])
+        'category': 'security', 'severity': 'high', 'suggestion': 'Correct the affected behavior', 'reason': 'Unauthorized access is a security impact'}]}))])
     s.snapshot = snapshot()
     s.findings = [issue]
     s.verify()
@@ -121,7 +121,7 @@ def test_invalid_verifier_category_cannot_make_a_candidate_publishable():
     from ai_review.validation import validate_findings
     issue = validate_findings(snapshot(), [finding()]).retained[0]
     s = session([text(json.dumps({'decisions': [{'id': issue.id, 'status': 'supported',
-        'category': 'made-up', 'reason': 'Claimed support'}]}))])
+        'category': 'made-up', 'severity': 'high', 'suggestion': 'Correct the affected behavior', 'reason': 'Claimed support'}]}))])
     s.findings = [issue]
     s.verify()
     assert issue.verification_status == 'unverified'
@@ -132,7 +132,7 @@ def test_category_correction_merges_duplicate_findings_without_breaking_report()
     from test_validation import finding, snapshot
     from ai_review.validation import validate_findings
     issues = validate_findings(snapshot(), [finding(), finding(category='security')]).retained
-    decisions = [{'id': f.id, 'status': 'supported', 'category': 'security',
+    decisions = [{'id': f.id, 'status': 'supported', 'category': 'security', 'severity': 'high', 'suggestion': 'Correct the affected behavior',
         'reason': 'Same source issue'} for f in issues]
     s = session([text(json.dumps({'decisions': decisions}))])
     s.snapshot = snapshot()
@@ -146,6 +146,7 @@ def test_category_correction_merges_duplicate_findings_without_breaking_report()
 def test_prompt_context_truncation_is_visible_in_final_report():
     s = session([])
     s.snapshot.files['app.py'].content = 'x = 1\n' * 6000
+    s.snapshot.files['app.py'].added_lines = list(range(1,6001))
     s.context()
     s.context()
     for name in ('correctness', 'security', 'tests', 'verifier', 'static_analysis'):
@@ -160,9 +161,46 @@ def test_verifier_category_promotion_restores_valid_inline_anchor():
     from ai_review.validation import validate_findings
     issue = validate_findings(snapshot(), [finding(category='tests')]).retained[0]
     s = session([text(json.dumps({'decisions': [{'id': issue.id, 'status': 'supported',
-        'category': 'correctness', 'reason': 'Functional defect rather than missing coverage'}]}))])
+        'category': 'correctness', 'severity': 'high', 'suggestion': 'Correct the affected behavior', 'reason': 'Functional defect rather than missing coverage'}]}))])
     s.snapshot = snapshot()
     s.findings = [issue]
     s.verify()
     assert issue.category == 'correctness'
     assert issue.inline_eligible
+
+
+def test_specialist_resolves_source_references_and_preserves_other_valid_candidates():
+    from test_evidence import candidate
+    s=session([])
+    ref=s.tools.evidence.register('app.py','head',1,1)['ref']
+    good=candidate(ref);good['evidence'][0].update(start_line=1,end_line=1)
+    bad=candidate('unknown')
+    s.model=ScriptedModel([tool(),text(json.dumps({'findings':[bad,good]}))])
+    s.review('correctness')
+    assert len(s.candidates)==1
+    assert s.candidates[0].evidence[0].excerpt=='x=1'
+    assert any('Unknown source reference' in e for e in s.errors)
+
+
+def test_verifier_reassesses_severity_and_replaces_incomplete_suggestion():
+    from test_validation import finding, snapshot
+    from ai_review.validation import validate_findings
+    issue=validate_findings(snapshot(),[finding()]).retained[0]
+    issue.severity='critical';issue.suggestion='Remove the condition'
+    s=session([text(json.dumps({'decisions':[dict(id=issue.id,status='supported',category='correctness',
+        severity='medium',suggestion='Propagate unexpected exceptions; test the error path.',reason='Bounded functional failure')]}))])
+    s.snapshot=snapshot();s.findings=[issue];s.verify()
+    assert issue.severity=='medium'
+    assert issue.suggestion=='Propagate unexpected exceptions; test the error path.'
+    assert issue.verification_status=='supported'
+
+
+def test_invalid_verifier_severity_keeps_all_candidates_unverified():
+    from test_validation import finding, snapshot
+    from ai_review.validation import validate_findings
+    issue=validate_findings(snapshot(),[finding()]).retained[0]
+    s=session([text(json.dumps({'decisions':[dict(id=issue.id,status='supported',category='correctness',
+        severity='extreme',suggestion='Fix it',reason='Claimed support')]}))])
+    s.findings=[issue];s.verify()
+    assert issue.verification_status=='unverified'
+    assert s.checks['verifier']['status']=='partial'

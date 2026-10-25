@@ -1,0 +1,16 @@
+{
+  "id": "case-311-heldout",
+  "repository": "langchain-ai/open_deep_research",
+  "url": "https://github.com/langchain-ai/open_deep_research/pull/311",
+  "license": "MIT",
+  "base_sha": "d337ae32ed4ff8f4c6fbe192ba3bf1b2d6610799",
+  "head_sha": "a9b2ef1f291f9535baf434a20cad399a6a7c1806",
+  "python_paths": [
+    "src/legacy/configuration.py"
+  ],
+  "reviewed_upstream_sha": "d337ae32ed4ff8f4c6fbe192ba3bf1b2d6610799",
+  "evaluation_path": "eval_samples/case_311/configuration.py",
+  "expected_issues_file": "evals/expected/case-311-heldout.expected.json",
+  "status": "held-out labels prepared before first live model run; model inputs do not contain labels",
+  "upstream_fix_merged": false
+}

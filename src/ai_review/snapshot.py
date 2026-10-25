@@ -1,4 +1,5 @@
 """Pinned source snapshots, safe file reads, and strict unified-hunk parsing."""
+from ai_review.source import source_lines
 import base64
 import re
 from urllib.parse import quote
@@ -15,7 +16,7 @@ def parse_diff(patch: str) -> tuple[list[int], list[int], list[int]]:
     old_left=new_left=0
     target=0
     hunks=0
-    for line in patch.splitlines():
+    for line in source_lines(patch):
         match=re.fullmatch(r'@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@.*',line)
         if match:
             if old_left or new_left:

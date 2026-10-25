@@ -1,4 +1,5 @@
 """Read-only tools; reviewed Python is parsed, never executed."""
+from ai_review.source import source_lines
 import ast
 import json
 from pathlib import Path
@@ -8,6 +9,7 @@ from urllib.parse import quote
 from ai_review.schemas import FileSnapshot, ToolResult, safe_path
 from ai_review.redaction import redact_source
 from ai_review.snapshot import read_file
+from ai_review.evidence import EvidenceCatalog
 
 
 class SnapshotTools:
@@ -16,6 +18,7 @@ class SnapshotTools:
         self.events=[]
         self.failures=[]
         self._inventory=None
+        self.evidence=EvidenceCatalog(snapshot)
 
     def _file(self,path):
         safe_path(path)
@@ -46,13 +49,23 @@ class SnapshotTools:
             content=f.base_content if source=='base' else f.content if source=='head' else None
             if content is None:
                 raise ValueError('Source side unavailable')
-            lines=redact_source(content).splitlines()
+            lines=source_lines(redact_source(content))
             if start_line>len(lines):
                 raise ValueError('Source start exceeds file')
             end_line=min(end_line,len(lines))
-            text='\n'.join(lines[start_line-1:end_line])
-            return ToolResult(True,dict(path=path,start_line=start_line,end_line=end_line,
-                content=text[:self.settings.tool_output_chars]),truncated=len(text)>self.settings.tool_output_chars)
+            visible=[]
+            chars=0
+            for line in lines[start_line-1:end_line]:
+                cost=len(line)+(1 if visible else 0)
+                if chars+cost>self.settings.tool_output_chars:
+                    break
+                visible.append(line)
+                chars+=cost
+            if not visible:
+                raise ValueError('Source line exceeds tool output limit')
+            actual_end=start_line+len(visible)-1
+            block=self.evidence.register(path,source,start_line,actual_end)
+            return ToolResult(True,block,truncated=actual_end<end_line)
         except (ValueError,RuntimeError,KeyError,UnicodeError):
             return ToolResult(False,error='Requested source unavailable or outside limits')
 
@@ -89,7 +102,7 @@ class SnapshotTools:
                 content=f.base_content if source=='base' else f.content if source=='head' else None
                 if content is None:
                     raise ValueError('Source side unavailable')
-                for number,line in enumerate(redact_source(content).splitlines(),1):
+                for number,line in enumerate(source_lines(redact_source(content)),1):
                     if query.casefold() in line.casefold():
                         results.append(dict(path=path,line=number,content=redact_source(line)[:500]))
                         if len(results)>=20:

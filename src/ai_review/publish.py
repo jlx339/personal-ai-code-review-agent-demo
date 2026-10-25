@@ -1,4 +1,5 @@
 """Deterministic manual publication of specific verified report findings."""
+from ai_review.source import source_lines
 import io
 import re
 import zipfile
@@ -109,7 +110,7 @@ def publish_selected(client,report,approved_ids):
             if cache_key not in source_cache:
                 path=previous_paths.get(e.path,e.path) if e.source=='base' else e.path
                 ref=report.base_sha if e.source=='base' else report.head_sha
-                source_cache[cache_key]=redact_source(read_file(client,report.repository,path,ref,Settings())).splitlines()
+                source_cache[cache_key]=source_lines(redact_source(read_file(client,report.repository,path,ref,Settings())))
             lines=source_cache[cache_key]
             if e.end_line>len(lines) or '\n'.join(lines[e.start_line-1:e.end_line])!=redact_source(e.excerpt):
                 raise ValueError('Selected finding evidence no longer matches')

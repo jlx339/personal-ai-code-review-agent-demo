@@ -8,7 +8,7 @@ class Settings:
     max_requests: int = 12
     specialist_turns: int = 3
     verifier_turns: int = 2
-    output_tokens: int = 2000
+    output_tokens: int = 4000
     request_interval: float = 5.0
     max_files: int = 10
     max_changed_lines: int = 1000

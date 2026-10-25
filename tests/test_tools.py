@@ -90,3 +90,10 @@ def test_static_scan_limit_marks_report_scope_incomplete():
     assert len(result.data) == 50
     assert result.truncated
     assert t.failures == ['scan_security: output truncated']
+
+
+def test_source_reads_issue_references_bound_to_the_delivered_window():
+    t=tools();result=t.read_source('app.py',2,2)
+    from test_evidence import candidate
+    f=t.evidence.resolve(candidate(result.data['ref']))
+    assert f.evidence[0].excerpt=='print(x)'
