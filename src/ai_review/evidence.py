@@ -33,13 +33,23 @@ class EvidenceCatalog:
         if not isinstance(references,list) or not 1<=len(references)<=3:
             raise ValueError('One to three evidence references required')
         evidence=[]
+        anchors=[]
         for item in references:
-            if not isinstance(item,dict) or set(item)!={'ref','start_line','end_line'}:
+            if not isinstance(item,dict) or set(item) not in ({'ref','line'},{'ref','start_line','end_line'}):
                 raise ValueError('Invalid evidence reference fields')
             if not isinstance(item['ref'],str) or item['ref'] not in self.spans:
                 raise ValueError('Unknown source reference')
             block=self.spans[item['ref']]
-            start,end=item['start_line'],item['end_line']
+            if 'line' in item:
+                line=item['line']
+                if type(line) is not int or not block['start_line']<=line<=block['end_line']:
+                    raise ValueError('Cause line outside delivered source')
+                start=max(block['start_line'],line-2)
+                end=min(block['end_line'],line+2)
+                anchors.append((line,line))
+            else:
+                start,end=item['start_line'],item['end_line']
+                anchors.append((start,end))
             if (type(start) is not int or type(end) is not int
                     or not block['start_line']<=start<=end<=block['end_line'] or end-start>=40):
                 raise ValueError('Evidence range outside delivered source or exceeds 40 lines')
@@ -49,5 +59,5 @@ class EvidenceCatalog:
                 source='base' if block['source']=='base' else 'source'))
         anchor=evidence[0]
         text={k:v for k,v in raw.items() if k!='evidence'}
-        return Finding(**text,path=anchor.path,start_line=anchor.start_line,end_line=anchor.end_line,
+        return Finding(**text,path=anchor.path,start_line=anchors[0][0],end_line=anchors[0][1],
             source='base' if anchor.source=='base' else 'head',evidence=evidence)

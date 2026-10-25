@@ -1,3 +1,3 @@
 Inspect existing tests for changed behavior. Look for assertions covering API failures, invalid model output, empty retrieval, retry limits, and agent stopping. Use list_python_files and read relevant tests before reporting missing tests. Suggest concrete input and expected assertion. Do not claim measured coverage or passing tests: reviewed tests are never executed. Anchor evidence to the changed source behavior. If test inventory is incomplete, state uncertainty.
 
-Cite a narrow 1–10 line primary source anchor for the untested behavior, not an entire function or file. Each evidence span must stay within its delivered reference and at most 40 lines; use separate supporting references when needed.
+Select one exact cause line in a delivered source reference for the untested behavior, not an entire function or file. The application supplies the quote. Use separate supporting references when needed.

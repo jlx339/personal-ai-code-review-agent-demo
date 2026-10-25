@@ -49,3 +49,15 @@ def test_unicode_separator_in_a_string_keeps_github_line_numbers():
     c=catalog();c.snapshot.files['app.py'].content='text="a\u2028b"\nx=1\n'
     ref=c.register('app.py','head',1,2)['ref']
     assert c.resolve(candidate(ref)).evidence[0].excerpt=='x=1'
+
+
+def test_line_reference_builds_a_small_quote_and_uses_the_exact_cause_line():
+    c=catalog();ref=c.register('app.py','head',1,3)['ref'];raw=candidate(ref)
+    raw['evidence']=[dict(ref=ref,line=2)]
+    f=c.resolve(raw)
+    assert (f.start_line,f.end_line)==(2,2)
+    assert f.evidence[0].start_line==1 and f.evidence[0].end_line==3
+    assert '    return 1' in f.evidence[0].excerpt
+    assert 'private-value' not in f.evidence[0].excerpt
+    raw['evidence']=[dict(ref=ref,line=4)]
+    with pytest.raises(ValueError,match='outside delivered'): c.resolve(raw)
