@@ -176,6 +176,7 @@ def test_specialist_resolves_source_references_and_preserves_other_valid_candida
     good=candidate(ref);good['evidence'][0].update(start_line=1,end_line=1)
     bad=candidate('unknown')
     s.model=ScriptedModel([tool(),text(json.dumps({'findings':[bad,good]}))])
+    s.reasoning_model=s.model
     s.review('correctness')
     assert len(s.candidates)==1
     assert s.candidates[0].evidence[0].excerpt=='x=1'

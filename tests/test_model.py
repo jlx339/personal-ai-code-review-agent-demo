@@ -59,3 +59,21 @@ def test_terminal_credential_error_stops_later_specialists_requests():
     with pytest.raises(ModelError): m.invoke([])
     with pytest.raises(ModelError): m.invoke([])
     assert m.budget.calls==1
+
+
+def test_reasoning_model_has_supported_thinking_level_and_shares_request_budget():
+    seen=[]
+    def transport(body):
+        seen.append(body['generationConfig'])
+        return 200,{'candidates':[{'content':{'parts':[{'text':'{}'}]}}]},{}
+    m=model(transport);strong=m.for_model('gemini-3.8-flash')
+    m.invoke([]);strong.invoke([])
+    assert seen[0]['thinkingConfig']['thinkingLevel']=='MINIMAL'
+    assert seen[1]['thinkingConfig']['thinkingLevel']=='LOW'
+    assert seen[1]['maxOutputTokens']==8000
+    assert m.budget.calls==2
+    assert m.budget.summary()['model_requests']=={'gemini-3.5-flash-lite':1,'gemini-3.8-flash':1}
+
+
+def test_model_routing_refuses_non_allowlisted_models():
+    with pytest.raises(ValueError): model(lambda _:None).for_model('paid-arbitrary-model')
