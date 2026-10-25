@@ -19,3 +19,9 @@ def test_diagnostics_are_single_line_sanitized_json():
     line=diagnostic_summary(r)
     assert '\n' not in line and 'private-literal' not in line
     assert json.loads(line)['status']=='partial'
+
+
+def test_quoted_code_remains_readable_while_html_and_mentions_are_escaped():
+    from ai_review.report import safe_text
+    assert safe_text('`response["answer"]` and `state[\'notes\']`') == '`response["answer"]` and `state[\'notes\']`'
+    assert safe_text('<script>@owner</script>') == '&lt;script&gt;＠owner&lt;/script&gt;'

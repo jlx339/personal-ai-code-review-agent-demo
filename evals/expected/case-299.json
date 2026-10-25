@@ -1,0 +1,16 @@
+{
+  "sample": "case-299",
+  "upstream": {
+    "number": 299,
+    "url": "https://github.com/langchain-ai/open_deep_research/pull/299",
+    "title": "fix: wait for all legacy research sections",
+    "body": "## Summary\n- persist the planned sections before dispatching parallel research workers\n- wait for every planned worker to return before prompting the supervisor to write final sections\n- add offline regression coverage for dispatch, partial completion, and full completion\n\nFixes #284\n\n## Testing\n- `uv run pytest tests/test_legacy_multi_agent.py -q`\n- `uv run ruff check tests/test_legacy_multi_agent.py`\n- `uv run ruff format --check tests/test_legacy_multi_agent.py`",
+    "base": "d337ae32ed4ff8f4c6fbe192ba3bf1b2d6610799",
+    "head": "284882ec3567fb09e36586ed5f6786d6b2451796",
+    "license": "MIT"
+  },
+  "url": "https://github.com/langchain-ai/open_deep_research/blob/d337ae32ed4ff8f4c6fbe192ba3bf1b2d6610799/src/legacy/multi_agent.py",
+  "evaluation_mode": "Unmodified historical buggy source added as a new file in an owned disposable PR. This is a real-code sample, not a recreation of the original introducing diff.",
+  "status": "Labels prepared before model run; maintainer PR claim checked against source. No live model result yet."
+}
+

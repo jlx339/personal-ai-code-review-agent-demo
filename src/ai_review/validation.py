@@ -11,6 +11,14 @@ class ValidationResult:
     rejected: list = field(default_factory=list)
 
 
+def finding_identity(f):
+    return json.dumps([f.path,f.source,f.start_line,f.end_line,f.category,f.title.casefold().strip()],separators=(',',':'))
+
+
+def assign_finding_id(f):
+    f.id=hashlib.sha256(finding_identity(f).encode()).hexdigest()[:12]
+
+
 def validate_findings(snapshot,candidates):
     out=ValidationResult()
     seen=set()
@@ -44,11 +52,11 @@ def validate_findings(snapshot,candidates):
         if not valid or not anchor_evidence or not f.impact.strip() or not f.explanation.strip():
             out.rejected.append('Candidate evidence or impact is unsupported')
             continue
-        identity=json.dumps([f.path,f.source,f.start_line,f.end_line,f.category,f.title.casefold().strip()],separators=(',',':'))
+        identity=finding_identity(f)
         if identity in seen:
             continue
         seen.add(identity)
-        f.id=hashlib.sha256(identity.encode()).hexdigest()[:12]
+        assign_finding_id(f)
         f.inline_eligible=f.source=='head' and f.category!='tests' and f.start_line in source.added_lines
         f.verification_status='unverified'
         out.retained.append(f)

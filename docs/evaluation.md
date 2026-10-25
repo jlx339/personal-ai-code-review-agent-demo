@@ -1,6 +1,6 @@
 # Evaluation on Real Python AI Changes
 
-Status: Pending. Synthetic unit tests and a successful API connection are not a substitute for reviewing three real code samples.
+Status: Three historical real-code samples selected and labeled; live scoring pending. Synthetic unit tests and a successful API connection are not a substitute for reviewing three real code samples.
 
 ## Dataset selection
 
@@ -29,8 +29,14 @@ Run separate controlled failures for rate limits, invalid model output, unavaila
 | --- | --- |
 | Gemini authentication | Owner successfully ran a one-request connection check. |
 | Core regression tests | Run `pytest -q`; latest counts are recorded in the build log. |
-| Three real samples | Not selected or executed yet. |
+| Three real samples | Pinned in `evals/manifest.json`; pre-run expected issues in `evals/expected/`. Execution pending. |
 | Real model review precision/recall | Not measured. |
 | LangGraph integration | Local real-graph test passed after dependencies installed. |
-| GitHub analysis and selected publication | Awaiting target repository setup and secret. |
+| GitHub analysis and selected publication | Verified on synthetic PR #1: analysis 40167343339 was partial; owner-selected publication 40167781789 succeeded. |
 | Final demo and Google Doc | Not recorded or created. |
+
+## Historical sample method and limitations
+
+The samples are unmodified buggy Python files from `langchain-ai/open_deep_research`, pinned to the base revisions of upstream PRs #335, #286, and #299. They are added as new files in three disposable owned PRs. This tests real code, while keeping publication permissions and credentials in the owned repository. It does not reproduce the upstream bug-introducing change. Supporting modules are not copied, so claims needing unavailable context must remain uncertain. No imported code is executed. MIT attribution is retained in `evals/upstream/LICENSE`.
+
+Expected issues were assessed from pinned source and the upstream proposed fixes before model runs. These upstream PRs were unmerged at selection time, so their descriptions are reference claims rather than proof of maintainer acceptance. All three samples primarily cover correctness in one codebase. Additional security and benign samples would be needed to make broader quality claims.

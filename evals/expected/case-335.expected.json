@@ -1,0 +1,23 @@
+[
+  {
+    "id": "wrong-compression-model",
+    "severity": "high",
+    "category": "correctness",
+    "start_line": 569,
+    "end_line": 569,
+    "preconditions": "Research and compression models use different providers; compression exceeds its context limit.",
+    "explanation": "The invoked model uses compression_model (lines 527–530), but token-limit detection uses research_model (line 569), preventing the intended message truncation for provider-specific errors.",
+    "source_claim": "Upstream PR #335 and inspection of pinned source. The PR is unmerged, so this is a manually assessed expected issue, not maintainer-confirmed ground truth."
+  },
+  {
+    "id": "mutated-state-messages",
+    "severity": "medium",
+    "category": "correctness",
+    "start_line": 535,
+    "end_line": 538,
+    "preconditions": "state supplies a researcher_messages list shared with the graph state.",
+    "explanation": "The state list is aliased then appended to in place rather than copied; compression changes the incoming state messages.",
+    "source_claim": "Second change in upstream PR #335; manually assessed."
+  }
+]
+

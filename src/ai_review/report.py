@@ -8,7 +8,7 @@ from ai_review.schemas import SEVERITIES
 
 
 def safe_text(text):
-    return html.escape(redact_source(str(text))).replace('@','＠')
+    return html.escape(redact_source(str(text)),quote=False).replace('@','＠')
 
 
 def render_markdown(report):

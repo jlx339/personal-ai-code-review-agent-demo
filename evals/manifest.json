@@ -1,6 +1,55 @@
 {
-  "status": "awaiting real sample selection",
-  "samples": [],
-  "required_samples": 3,
-  "required_fields": ["id", "repository", "url", "license", "base_sha", "head_sha", "python_paths", "expected_issues_file"]
+  "status": "Three historical real-code samples selected; live evaluation pending",
+  "method": "Full unmodified buggy files at pinned upstream base SHAs, introduced as new files in separate disposable owned PRs. Upstream fix PRs supply reference labels; the original introducing diffs are not reproduced. All three are from the same MIT project and primarily test correctness. No security or benign-case performance claim.",
+  "samples": [
+    {
+      "id": "case-335",
+      "repository": "langchain-ai/open_deep_research",
+      "url": "https://github.com/langchain-ai/open_deep_research/pull/335",
+      "license": "MIT",
+      "base_sha": "20aaa0d422bd290c83f93574810ef1244e8d5955",
+      "head_sha": "fca2acd8d29c26d266f225638bf03ad12aa6bcab",
+      "python_paths": [
+        "src/open_deep_research/deep_researcher.py"
+      ],
+      "reviewed_upstream_sha": "20aaa0d422bd290c83f93574810ef1244e8d5955",
+      "evaluation_path": "eval_samples/case_335/deep_researcher.py",
+      "expected_issues_file": "evals/expected/case-335.expected.json",
+      "provenance_file": "evals/expected/case-335.json",
+      "status": "prepared; live review pending"
+    },
+    {
+      "id": "case-286",
+      "repository": "langchain-ai/open_deep_research",
+      "url": "https://github.com/langchain-ai/open_deep_research/pull/286",
+      "license": "MIT",
+      "base_sha": "408da442a661ea5e40a6163329f82e3f22628949",
+      "head_sha": "c7c621213fd8b9e3c80f3e824382d4bc106f789b",
+      "python_paths": [
+        "src/open_deep_research/deep_researcher.py"
+      ],
+      "reviewed_upstream_sha": "408da442a661ea5e40a6163329f82e3f22628949",
+      "evaluation_path": "eval_samples/case_286/deep_researcher.py",
+      "expected_issues_file": "evals/expected/case-286.expected.json",
+      "provenance_file": "evals/expected/case-286.json",
+      "status": "prepared; live review pending"
+    },
+    {
+      "id": "case-299",
+      "repository": "langchain-ai/open_deep_research",
+      "url": "https://github.com/langchain-ai/open_deep_research/pull/299",
+      "license": "MIT",
+      "base_sha": "d337ae32ed4ff8f4c6fbe192ba3bf1b2d6610799",
+      "head_sha": "284882ec3567fb09e36586ed5f6786d6b2451796",
+      "python_paths": [
+        "src/legacy/multi_agent.py"
+      ],
+      "reviewed_upstream_sha": "d337ae32ed4ff8f4c6fbe192ba3bf1b2d6610799",
+      "evaluation_path": "eval_samples/case_299/multi_agent.py",
+      "expected_issues_file": "evals/expected/case-299.expected.json",
+      "provenance_file": "evals/expected/case-299.json",
+      "status": "prepared; live review pending"
+    }
+  ],
+  "required_samples": 3
 }

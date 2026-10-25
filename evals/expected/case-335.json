@@ -1,0 +1,16 @@
+{
+  "sample": "case-335",
+  "upstream": {
+    "number": 335,
+    "url": "https://github.com/langchain-ai/open_deep_research/pull/335",
+    "title": "fix(research): BUG-1 fix wrong model param for token limit detection",
+    "body": "## Summary\r\nIn `compress_research`, the token limit detection logic incorrectly uses `configurable.research_model` instead of `configurable.compression_model`.\r\n\r\n## Problem\r\nWhen the compression model is different from the research model (e.g., `research_model=\"openai:gpt-4o\"` and `compression_model=\"deepseek:deepseek-chat\"`), the exception handler fails to recognize token limit errors because `is_token_limit_exceeded` checks the wrong model's provider-specific error patterns. This causes the retry loop to exit early without truncating the messages, resulting in a `\"Maximum retries exceeded\"` error even when simply truncating would resolve the issue.\r\n\r\n## Fix\r\n- Line 569: Replace `configurable.research_model` with `configurable.compression_model` in the `is_token_limit_exceeded` call.\r\n\r\n## Impact\r\n- Resolves silent failures when using mixed-model configurations.\r\n- No effect on default setups where both models are identical.",
+    "base": "20aaa0d422bd290c83f93574810ef1244e8d5955",
+    "head": "fca2acd8d29c26d266f225638bf03ad12aa6bcab",
+    "license": "MIT"
+  },
+  "url": "https://github.com/langchain-ai/open_deep_research/blob/20aaa0d422bd290c83f93574810ef1244e8d5955/src/open_deep_research/deep_researcher.py",
+  "evaluation_mode": "Unmodified historical buggy source added as a new file in an owned disposable PR. This is a real-code sample, not a recreation of the original introducing diff.",
+  "status": "Labels prepared before model run; maintainer PR claim checked against source. No live model result yet."
+}
+

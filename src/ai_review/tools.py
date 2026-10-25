@@ -149,7 +149,7 @@ class SnapshotTools:
                             continue
                         findings.append(dict(path=paths[targets.index(file_name)],line=result['line_number'],
                             rule=result['test_id'],severity=result['issue_severity'],text=redact_source(result['issue_text'])))
-                    return ToolResult(True,findings)
+                    return ToolResult(True,findings,truncated=len(parsed.get('results',[]))>50)
         except FileNotFoundError:
             return ToolResult(False,error='Bandit unavailable')
         except (subprocess.TimeoutExpired,ValueError,KeyError,RuntimeError):

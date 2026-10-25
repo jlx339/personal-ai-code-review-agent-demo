@@ -1,0 +1,16 @@
+{
+  "sample": "case-286",
+  "upstream": {
+    "number": 286,
+    "url": "https://github.com/langchain-ai/open_deep_research/pull/286",
+    "title": "fix: surface child research errors in supervisor_tools (#283)",
+    "body": "## Summary\n\n`supervisor_tools` guarded its `ConductResearch` exception handler with:\n\n```python\nif is_token_limit_exceeded(e, configurable.research_model) or True:\n```\n\nThe trailing `or True` made the branch fire for **every** exception, so any child researcher failure was silently treated as a normal end of the research phase. The top-level graph then continued from `research_supervisor` to `final_report_generation`, meaning a run could still produce a final report after part of the research fan-out had failed.\n\n## Fix\n\nRemove the `or True`:\n- **Token-limit errors** still end the research phase gracefully with the notes gathered so far (unchanged behavior).\n- **Any other exception** is now re-raised and surfaced instead of being swallowed.\n\nThis mirrors the error handling already used in `final_report_generation`, which distinguishes token-limit errors from genuine failures rather than treating all errors the same.\n\n## Testing\n\nAdded `tests/test_supervisor_tools.py` with two regression tests:\n- `test_child_research_error_is_surfaced` — a non-token-limit child failure now propagates instead of returning `goto=END`.\n- `test_token_limit_ends_research_phase_gracefully` — a token-limit error still ends the phase with the gathered notes.\n\n```\n2 passed\n```\n`ruff check` clean on changed files.\n\nFixes #283",
+    "base": "408da442a661ea5e40a6163329f82e3f22628949",
+    "head": "c7c621213fd8b9e3c80f3e824382d4bc106f789b",
+    "license": "MIT"
+  },
+  "url": "https://github.com/langchain-ai/open_deep_research/blob/408da442a661ea5e40a6163329f82e3f22628949/src/open_deep_research/deep_researcher.py",
+  "evaluation_mode": "Unmodified historical buggy source added as a new file in an owned disposable PR. This is a real-code sample, not a recreation of the original introducing diff.",
+  "status": "Labels prepared before model run; maintainer PR claim checked against source. No live model result yet."
+}
+

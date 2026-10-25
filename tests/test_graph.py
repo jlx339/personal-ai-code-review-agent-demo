@@ -91,3 +91,71 @@ def test_final_output_schema_is_bound_to_each_reviewers_category():
     s.model.invoke=invoke
     s.review('tests')
     assert schemas[0]['properties']['findings']['items']['properties']['category']['enum']==['tests']
+
+
+def test_verifier_corrects_category_and_updates_publication_identity():
+    from test_validation import finding, snapshot
+    from ai_review.validation import validate_findings
+    issue = validate_findings(snapshot(), [finding()]).retained[0]
+    old_id = issue.id
+    s = session([text(json.dumps({'decisions': [{'id': old_id, 'status': 'supported',
+        'category': 'security', 'reason': 'Unauthorized access is a security impact'}]}))])
+    s.snapshot = snapshot()
+    s.findings = [issue]
+    s.verify()
+    assert issue.category == 'security'
+    assert issue.id != old_id
+    assert issue.verification_status == 'supported'
+    assert s.checks['verifier']['status'] == 'complete'
+
+
+def test_invalid_verifier_category_cannot_make_a_candidate_publishable():
+    from test_validation import finding, snapshot
+    from ai_review.validation import validate_findings
+    issue = validate_findings(snapshot(), [finding()]).retained[0]
+    s = session([text(json.dumps({'decisions': [{'id': issue.id, 'status': 'supported',
+        'category': 'made-up', 'reason': 'Claimed support'}]}))])
+    s.findings = [issue]
+    s.verify()
+    assert issue.verification_status == 'unverified'
+    assert s.checks['verifier']['status'] == 'partial'
+
+
+def test_category_correction_merges_duplicate_findings_without_breaking_report():
+    from test_validation import finding, snapshot
+    from ai_review.validation import validate_findings
+    issues = validate_findings(snapshot(), [finding(), finding(category='security')]).retained
+    decisions = [{'id': f.id, 'status': 'supported', 'category': 'security',
+        'reason': 'Same source issue'} for f in issues]
+    s = session([text(json.dumps({'decisions': decisions}))])
+    s.snapshot = snapshot()
+    s.findings = issues
+    s.verify()
+    report = s.finish()
+    assert len(report.findings) == 1
+    assert report.findings[0].verification_status == 'supported'
+
+
+def test_prompt_context_truncation_is_visible_in_final_report():
+    s = session([])
+    s.snapshot.files['app.py'].content = 'x = 1\n' * 6000
+    s.context()
+    s.context()
+    for name in ('correctness', 'security', 'tests', 'verifier', 'static_analysis'):
+        s.checks[name] = {'status': 'complete'}
+    report = s.finish()
+    assert report.status == 'partial'
+    assert report.scope_notes == ['Prompt source context truncated: app.py']
+
+
+def test_verifier_category_promotion_restores_valid_inline_anchor():
+    from test_validation import finding, snapshot
+    from ai_review.validation import validate_findings
+    issue = validate_findings(snapshot(), [finding(category='tests')]).retained[0]
+    s = session([text(json.dumps({'decisions': [{'id': issue.id, 'status': 'supported',
+        'category': 'correctness', 'reason': 'Functional defect rather than missing coverage'}]}))])
+    s.snapshot = snapshot()
+    s.findings = [issue]
+    s.verify()
+    assert issue.category == 'correctness'
+    assert issue.inline_eligible

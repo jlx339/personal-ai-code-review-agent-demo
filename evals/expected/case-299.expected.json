@@ -1,0 +1,13 @@
+[
+  {
+    "id": "premature-research-completion",
+    "severity": "high",
+    "category": "correctness",
+    "start_line": 201,
+    "end_line": 204,
+    "preconditions": "Multiple planned research sections exist and only some have completed.",
+    "explanation": "Any completed section triggers the research-complete message; no all-workers completion check exists. Dispatch also omits planned sections from its state update (line 306).",
+    "source_claim": "Upstream PR #299, linked issue #284, and pinned supervisor/dispatch source."
+  }
+]
+

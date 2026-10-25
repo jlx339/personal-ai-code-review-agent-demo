@@ -1,0 +1,13 @@
+[
+  {
+    "id": "swallowed-child-errors",
+    "severity": "high",
+    "category": "correctness",
+    "start_line": 332,
+    "end_line": 342,
+    "preconditions": "A delegated researcher raises a non-token-limit exception.",
+    "explanation": "The `or True` condition handles every exception as normal END, losing the failure and allowing incomplete research to proceed.",
+    "source_claim": "Upstream PR #286, linked issue #283, and pinned exception branch."
+  }
+]
+

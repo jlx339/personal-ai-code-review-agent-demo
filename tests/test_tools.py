@@ -75,3 +75,18 @@ def test_search_accepts_a_bounded_test_directory():
     result=t.search_source('parse_answer',['tests/'])
     assert result.ok
     assert result.data==[{'path':'tests/test_app.py','line':1,'content':'def test_parse_answer(): pass'}]
+
+
+def test_static_scan_limit_marks_report_scope_incomplete():
+    from types import SimpleNamespace
+    def execute(command, **kwargs):
+        kwargs['stdout'].write(json.dumps({'errors': [], 'results': [
+            {'filename': command[-1], 'line_number': 1, 'test_id': 'B101',
+             'issue_severity': 'LOW', 'issue_text': 'assert used'} for _ in range(51)]}))
+        return SimpleNamespace(returncode=1)
+    t = tools()
+    with patch('ai_review.tools.subprocess.run', side_effect=execute):
+        result = t.dispatch('scan_security', {'paths': ['app.py']})
+    assert len(result.data) == 50
+    assert result.truncated
+    assert t.failures == ['scan_security: output truncated']
