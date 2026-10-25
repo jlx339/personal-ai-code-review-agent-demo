@@ -1,0 +1,51 @@
+{
+  "phase": "Full bounded verifier context before line-only evidence format",
+  "run_id": 40172925982,
+  "diagnostics": {
+    "status": "partial",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "No source-validated candidates to verify"
+      }
+    },
+    "errors": [
+      "tests candidate rejected (Missing tests for ToolRetryMiddleware retry limits, backoff, and exception handling): Evidence range outside delivered source or exceeds 40 lines"
+    ],
+    "scope_notes": [],
+    "usage": {
+      "requests": 9,
+      "input_tokens": 77455,
+      "output_tokens": 462,
+      "model_requests": {
+        "gemini-3.5-flash-lite": 9
+      },
+      "review_profile": {
+        "primary_model": "gemini-3.5-flash-lite",
+        "reasoning_model": "gemini-3.5-flash-lite",
+        "reasoning_thinking": "LOW"
+      },
+      "elapsed_seconds": 43.19
+    },
+    "verification_decisions": [],
+    "findings": []
+  },
+  "assistant_assessment": "No supported findings; the original reference target remains unmatched. A test-gap candidate failed the previous range format. This run preceded line-only evidence selection.",
+  "owner_judgment_pending": true
+}

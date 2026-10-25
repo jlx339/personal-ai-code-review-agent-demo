@@ -4,7 +4,7 @@ This is an assisted code reviewer. Passing application tests does not establish 
 
 ## Verified behavior
 
-The installed local suite passes 75 tests without skips. It includes the real LangGraph flow and a built-wheel packaging check. Regression cases cover malformed model output, transient and terminal API errors, request budgets, unavailable scanning, source and tool limits, credential redaction, exact evidence, deleted code, category correction, duplicate IDs, source anchors, trusted workflow provenance, stale PRs, explicit approval, and duplicate/uncertain publication.
+The installed local suite passes 109 tests without skips. It includes the real LangGraph flow and a built-wheel packaging check. Regression cases cover malformed model output, transient and terminal API errors, request budgets, unavailable scanning, source and tool limits, credential redaction, exact evidence, deleted code, category correction, duplicate IDs, source anchors, trusted workflow provenance, stale PRs, explicit approval, and duplicate/uncertain publication.
 
 An independent code review identified an inline-anchor problem after category changes. A regression reproduced it, and the fix was reviewed again without further important findings in that change. This review was scoped to the reliability changes, not a certification of all application code.
 
@@ -16,7 +16,7 @@ A local Bandit scan of `src/` reported zero high, three medium, and eleven low f
 
 ## Model evaluation
 
-The first three real-code runs were all partial. None matched the three pre-labeled high-severity targets. One run found another source-supported exception-handling issue. The other two retained no supported findings. The full baseline diagnostics remain in `evals/results/baseline.json`.
+The initial three candidate runs were all partial; one was later excluded as duplicate source. None matched the three pre-labeled high-severity targets. One run found another source-supported exception-handling issue. The other two retained no supported findings. The full baseline diagnostics remain in `evals/results/baseline.json`.
 
 That baseline exposed specialists ending without tool investigation. The loop now asks an early-answer specialist to investigate within its existing turn budget before accepting a final answer. A regression test covers this recovery. It still reports partial results if the specialist never investigates. Follow-up outcomes must be recorded alongside the baseline, rather than replacing misses with a better-looking selected run.
 
@@ -26,4 +26,12 @@ The model may miss bugs, misclassify an issue, or propose a false positive. Exac
 
 The final dataset is narrow: three distinct historical files from two projects. A byte-identical candidate was excluded from distinct counts and retained as a repeated measurement. Source hashes are recorded in the manifest. Upstream fixes and manual source inspection supplied reference labels. The evaluation uses full files added to owned PRs, rather than the original bug-introducing diffs, and omits supporting modules. Broader claims require independent owner judgments, more projects, security cases, benign changes, and repeated measurements.
 
-Final follow-up: all three distinct reports were partial; none matched the three pre-labeled high targets. Tool-investigation recovery improved execution discipline, but did not meet the detection target. One other supported issue was retained; owner actionability judgments remain pending. The reliability pass is complete for the known defects found, while review quality remains an explicit limitation.
+Earlier follow-up before the HIGH profile: all three distinct reports were partial; none matched the three pre-labeled high targets. Tool-investigation recovery improved execution discipline, but did not meet the detection target. One other supported issue was retained; owner actionability judgments remain pending. The reliability pass is complete for the known defects found, while review quality remains an explicit limitation.
+
+## Final quality iteration
+
+The default now uses Flash Lite HIGH thinking for correctness/verification and MINIMAL for security/tests. Current analysis calls have explicit per-profile caps and timeout diagnostics. HIGH is the final default for correctness and verification. Source-reference cause lines, imported helper definitions, local callers, and callback wiring reach the verifier. Three request slots remain reserved for verification; optional claim-text corrections cannot move evidence anchors. Independent final review found no important remaining defect in the inspected default flow. The installed suite passes109 tests and both package formats build.
+
+The latest HIGH comparison matched1 of 3 original high reference targets and found an additional genuine exception-handling bug. The original accuracy target is not met; human-labeled precision is still undefined. A configuration miss and conditional robustness claim remain visible. Some LOW findings had incorrect boolean-default examples; they must not be published verbatim. See review-quality-results.md for source-checked examples and the full limitations.
+
+Flash 3.6 exhausted its free daily quota. Earlier normalized503 diagnostics could also represent transport failures. A later explicit probe confirmed a90-second timeout for a simple Flash 3.8 request; it did not run or score model reviews. No billing was enabled.

@@ -1,0 +1,417 @@
+{
+  "phase": "Final HIGH-thinking profile comparison",
+  "date": "2026-10-25",
+  "reviewer_sha": "938649bc1007672743ebef9456e67aa58bd931f0",
+  "application_tests": 109,
+  "model_profile": "Gemini3.5FlashLite HIGH for correctness/verifier, MINIMAL for security/tests; shared12attempt budget with3reservedverification slots",
+  "samples": [
+    {
+      "id": "case-335",
+      "run_id": 40175006325,
+      "head": "cb9d2ef83fe3f92923b8e69e493d3462496021c4",
+      "diagnostics": {
+        "status": "partial",
+        "checks": {
+          "static_analysis": {
+            "status": "complete",
+            "detail": "Bandit completed"
+          },
+          "correctness": {
+            "status": "complete",
+            "detail": "2 candidates; tool investigation completed"
+          },
+          "security": {
+            "status": "partial",
+            "detail": "1 candidates; tool investigation missing"
+          },
+          "tests": {
+            "status": "complete",
+            "detail": "0 candidates; tool investigation completed"
+          },
+          "verifier": {
+            "status": "complete",
+            "detail": "All candidates assessed"
+          }
+        },
+        "errors": [],
+        "scope_notes": [],
+        "usage": {
+          "requests": 10,
+          "input_tokens": 207821,
+          "output_tokens": 13075,
+          "model_requests": {
+            "gemini-3.5-flash-lite": 10
+          },
+          "review_profile": {
+            "primary_model": "gemini-3.5-flash-lite",
+            "reasoning_model": "gemini-3.5-flash-lite",
+            "reasoning_thinking": "HIGH"
+          },
+          "elapsed_seconds": 70.35
+        },
+        "verification_decisions": [
+          {
+            "id": "d96300f55fb3",
+            "previous_id": "d96300f55fb3",
+            "status": "supported",
+            "category": "correctness",
+            "severity": "high",
+            "reason": "The code contains 'or True' in the exception check condition, causing all exceptions during parallel research execution to unconditionally trigger workflow termination."
+          },
+          {
+            "id": "73529e1e478f",
+            "previous_id": "73529e1e478f",
+            "status": "supported",
+            "category": "correctness",
+            "severity": "medium",
+            "reason": "During research compression, token limit checking incorrectly inspects configurable.research_model instead of configurable.compression_model, which can cause misclassification when models differ."
+          },
+          {
+            "id": "50c7228c339e",
+            "previous_id": "7428f2f893e6",
+            "status": "rejected",
+            "category": "correctness",
+            "severity": "high",
+            "reason": "This is a duplicate claim of finding d96300f55fb3, identifying the exact same cause (the 'or True' condition on line 334) and consequence."
+          }
+        ],
+        "findings": [
+          {
+            "id": "d96300f55fb3",
+            "title": "Unconditional exception termination in supervisor research error handling",
+            "category": "correctness",
+            "severity": "high",
+            "source": "head",
+            "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+            "line": 334,
+            "verification": "supported",
+            "end_line": 334,
+            "evidence": [
+              {
+                "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+                "start_line": 332,
+                "end_line": 336,
+                "excerpt": "        except Exception as e:\n            # Handle research execution errors\n            if is_token_limit_exceeded(e, configurable.research_model) or True:\n                # Token limit exceeded or other error - end research phase\n                return Command(",
+                "source": "source"
+              }
+            ],
+            "impact": "Any exception during parallel research execution causes the research phase to terminate prematurely instead of handling or retrying.",
+            "preconditions": "An exception is raised during research execution in supervisor_tools.",
+            "explanation": "The exception handler condition includes `or True`, making it unconditionally evaluate to True and forcing early workflow termination on any exception regardless of whether a token limit was exceeded.",
+            "suggestion": "Update the exception handler condition to remove 'or True': except Exception as e: if is_token_limit_exceeded(e, configurable.research_model): return Command(goto=END, update={\"notes\": get_notes_from_tool_calls(supervisor_messages), \"research_brief\": state.get(\"research_brief\", \"\")}); raise e. Regression test: assert that non-token-limit exceptions propagate correctly rather than terminating the workflow."
+          },
+          {
+            "id": "73529e1e478f",
+            "title": "Wrong model name passed to token limit check during research compression",
+            "category": "correctness",
+            "severity": "medium",
+            "source": "head",
+            "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+            "line": 569,
+            "verification": "supported",
+            "end_line": 569,
+            "evidence": [
+              {
+                "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+                "start_line": 567,
+                "end_line": 571,
+                "excerpt": "            \n            # Handle token limit exceeded by removing older messages\n            if is_token_limit_exceeded(e, configurable.research_model):\n                researcher_messages = remove_up_to_last_ai_message(researcher_messages)\n                continue",
+                "source": "source"
+              }
+            ],
+            "impact": "Token limit exceptions during compression may fail to be correctly detected if compression_model differs from research_model.",
+            "preconditions": "An exception occurs during research compression using synthesizer_model configured with compression_model.",
+            "explanation": "The exception handler calls `is_token_limit_exceeded(e, configurable.research_model)` instead of using `configurable.compression_model`.",
+            "suggestion": "Pass configurable.compression_model instead of configurable.research_model to is_token_limit_exceeded in compress_research: if is_token_limit_exceeded(e, configurable.compression_model): researcher_messages = remove_up_to_last_ai_message(researcher_messages); continue. Regression test: verify compression token limit check uses compression model config."
+          },
+          {
+            "id": "50c7228c339e",
+            "title": "Unconditional exception fallback masking all runtime errors",
+            "category": "correctness",
+            "severity": "high",
+            "source": "head",
+            "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+            "line": 334,
+            "verification": "rejected",
+            "end_line": 334,
+            "evidence": [
+              {
+                "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+                "start_line": 332,
+                "end_line": 336,
+                "excerpt": "        except Exception as e:\n            # Handle research execution errors\n            if is_token_limit_exceeded(e, configurable.research_model) or True:\n                # Token limit exceeded or other error - end research phase\n                return Command(",
+                "source": "source"
+              }
+            ],
+            "impact": "Any exception occurring during parallel research execution is unconditionally caught and treated as a normal token-limit termination event, masking bugs and unexpected failures.",
+            "preconditions": "An exception is raised inside the try block executing research tasks in supervisor_tools.",
+            "explanation": "The exception handler uses 'if is_token_limit_exceeded(e, configurable.research_model) or True:', which evaluates to True for every exception, swallowing unexpected errors and bypasses standard error propagation.",
+            "suggestion": "None"
+          }
+        ]
+      }
+    },
+    {
+      "id": "case-299",
+      "run_id": 40175588332,
+      "head": "67edd3658cf9adf46574dc2b9764f524fc929a0d",
+      "diagnostics": {
+        "status": "complete",
+        "checks": {
+          "static_analysis": {
+            "status": "complete",
+            "detail": "Bandit completed"
+          },
+          "correctness": {
+            "status": "complete",
+            "detail": "1 candidates; tool investigation completed"
+          },
+          "security": {
+            "status": "complete",
+            "detail": "0 candidates; tool investigation completed"
+          },
+          "tests": {
+            "status": "complete",
+            "detail": "0 candidates; tool investigation completed"
+          },
+          "verifier": {
+            "status": "complete",
+            "detail": "All candidates assessed"
+          }
+        },
+        "errors": [],
+        "scope_notes": [],
+        "usage": {
+          "requests": 10,
+          "input_tokens": 126148,
+          "output_tokens": 11954,
+          "model_requests": {
+            "gemini-3.5-flash-lite": 10
+          },
+          "review_profile": {
+            "primary_model": "gemini-3.5-flash-lite",
+            "reasoning_model": "gemini-3.5-flash-lite",
+            "reasoning_thinking": "HIGH"
+          },
+          "elapsed_seconds": 70.56
+        },
+        "verification_decisions": [
+          {
+            "id": "95d69454ca09",
+            "previous_id": "95d69454ca09",
+            "status": "supported",
+            "category": "correctness",
+            "severity": "high",
+            "reason": "Directly indexing last_message.tool_calls[0] without verifying that tool_calls is non-empty causes an IndexError if the model responds without any tool calls."
+          }
+        ],
+        "findings": [
+          {
+            "id": "95d69454ca09",
+            "title": "Unchecked tool_calls in research_agent_should_continue causes IndexError",
+            "category": "correctness",
+            "severity": "high",
+            "source": "head",
+            "path": "eval_samples/case_299/multi_agent.py",
+            "line": 453,
+            "verification": "supported",
+            "end_line": 453,
+            "evidence": [
+              {
+                "path": "eval_samples/case_299/multi_agent.py",
+                "start_line": 451,
+                "end_line": 455,
+                "excerpt": "    last_message = messages[-1]\n\n    if last_message.tool_calls[0][\"name\"] == \"FinishResearch\":\n        # Research is done - return to supervisor\n        return END",
+                "source": "source"
+              }
+            ],
+            "impact": "Application crashes with an IndexError when the research agent model responds without any tool calls.",
+            "preconditions": "The research agent LLM returns a message lacking tool calls (empty tool_calls list).",
+            "explanation": "Unlike supervisor_should_continue which guards against empty tool calls, research_agent_should_continue directly indexes last_message.tool_calls[0] without verifying that tool_calls is non-empty.",
+            "suggestion": "async def research_agent_should_continue(state: SectionState) -> str: messages = state[\"messages\"]; last_message = messages[-1]; if not last_message.tool_calls: return END; if last_message.tool_calls[0][\"name\"] == \"FinishResearch\": return END; else: return \"research_agent_tools\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "case-38845",
+      "run_id": 40175591660,
+      "head": "134888cef2ff4b6386532ed2385b8685fa1b1b8a",
+      "diagnostics": {
+        "status": "partial",
+        "checks": {
+          "static_analysis": {
+            "status": "complete",
+            "detail": "Bandit completed"
+          },
+          "correctness": {
+            "status": "partial",
+            "detail": "0 candidates; tool investigation completed"
+          },
+          "security": {
+            "status": "complete",
+            "detail": "0 candidates; tool investigation completed"
+          },
+          "tests": {
+            "status": "complete",
+            "detail": "1 candidates; tool investigation completed"
+          },
+          "verifier": {
+            "status": "complete",
+            "detail": "All candidates assessed"
+          }
+        },
+        "errors": [],
+        "scope_notes": [
+          "read_source: Requested source unavailable or outside limits"
+        ],
+        "usage": {
+          "requests": 10,
+          "input_tokens": 90272,
+          "output_tokens": 3144,
+          "model_requests": {
+            "gemini-3.5-flash-lite": 10
+          },
+          "review_profile": {
+            "primary_model": "gemini-3.5-flash-lite",
+            "reasoning_model": "gemini-3.5-flash-lite",
+            "reasoning_thinking": "HIGH"
+          },
+          "elapsed_seconds": 50.76
+        },
+        "verification_decisions": [
+          {
+            "id": "2c2baaae4939",
+            "previous_id": "2c2baaae4939",
+            "status": "rejected",
+            "category": "tests",
+            "severity": "high",
+            "reason": "The test-gap claim lacks inspected test context and concrete inputs and assertions for the changed behavior, making it an unsupported absence claim."
+          }
+        ],
+        "findings": [
+          {
+            "id": "2c2baaae4939",
+            "title": "Missing unit tests for ToolRetryMiddleware",
+            "category": "tests",
+            "severity": "high",
+            "source": "head",
+            "path": "eval_samples/case_38845/tool_retry.py",
+            "line": 31,
+            "verification": "rejected",
+            "end_line": 31,
+            "evidence": [
+              {
+                "path": "eval_samples/case_38845/tool_retry.py",
+                "start_line": 29,
+                "end_line": 33,
+                "excerpt": "\n\nclass ToolRetryMiddleware(AgentMiddleware[AgentState[ResponseT], ContextT, ResponseT]):\n    \"\"\"Middleware that automatically retries failed tool calls with configurable backoff.\n",
+                "source": "source"
+              }
+            ],
+            "impact": "Unverified retry behavior, backoff calculation, exception filtering, and async/sync tool wrapping mechanisms.",
+            "preconditions": "New ToolRetryMiddleware implementation added without corresponding test cases.",
+            "explanation": "The file eval_samples/case_38845/tool_retry.py implements ToolRetryMiddleware with complex logic including retry limits, exception filters, backoff calculations, and async/sync handlers, but no corresponding tests were added in the test suite.",
+            "suggestion": "N/A"
+          }
+        ]
+      }
+    }
+  ],
+  "heldout": {
+    "id": "case-311-heldout",
+    "run_id": 40175008782,
+    "head": "fa3214d11df8c25f2d1cd6f3945d9ba648a3cca3",
+    "diagnostics": {
+      "status": "partial",
+      "checks": {
+        "static_analysis": {
+          "status": "complete",
+          "detail": "Bandit completed"
+        },
+        "correctness": {
+          "status": "partial",
+          "detail": "0 candidates; tool investigation completed"
+        },
+        "security": {
+          "status": "complete",
+          "detail": "0 candidates; tool investigation completed"
+        },
+        "tests": {
+          "status": "complete",
+          "detail": "0 candidates; tool investigation completed"
+        },
+        "verifier": {
+          "status": "complete",
+          "detail": "No source-validated candidates to verify"
+        }
+      },
+      "errors": [],
+      "scope_notes": [
+        "search_source: output truncated"
+      ],
+      "usage": {
+        "requests": 8,
+        "input_tokens": 27922,
+        "output_tokens": 2525,
+        "model_requests": {
+          "gemini-3.5-flash-lite": 8
+        },
+        "review_profile": {
+          "primary_model": "gemini-3.5-flash-lite",
+          "reasoning_model": "gemini-3.5-flash-lite",
+          "reasoning_thinking": "HIGH"
+        },
+        "elapsed_seconds": 41.13
+      },
+      "verification_decisions": [],
+      "findings": []
+    },
+    "matched_expected_ids": []
+  },
+  "assistant_assessment": {
+    "confirmed_clear_source_defects": [
+      {
+        "sample": "case-335",
+        "finding_id": "d96300f55fb3",
+        "defect": "or True makes all child-research exceptions terminate the workflow",
+        "fix_assessment": "Removing orTrue and propagating other exceptions addresses the stated failure."
+      },
+      {
+        "sample": "case-335",
+        "finding_id": "73529e1e478f",
+        "defect": "Compression exceptions are classified using research_model instead of the invoked compression_model",
+        "fix_assessment": "Use compression_model for provider-specific token-limit detection; helper source was inspected."
+      }
+    ],
+    "conditional_robustness_findings": [
+      {
+        "sample": "case-299",
+        "finding_id": "95d69454ca09",
+        "assessment": "Indexing an empty tool_calls list raisesIndexError. Reachability and high severity must be judged against forced-tool-call assumptions; do not count as the pre-labeled premature-completion issue."
+      }
+    ],
+    "matched_original_expected_ids": [
+      "wrong-compression-model"
+    ],
+    "missed_original_expected_ids": [
+      "mutated-state-messages",
+      "premature-research-completion",
+      "nonretryable-tool-errors-swallowed"
+    ],
+    "original_high_target_matches": 1,
+    "original_high_target_total": 3,
+    "original_high_target_recall": 0.3333333333333333,
+    "actionable_precision": null,
+    "owner_labeled_findings": 0,
+    "original_quality_target_met": false,
+    "notes": [
+      "Additional genuine findings do not retroactively become pre-labeled target matches.",
+      "HIGH held-out run missed both targets; prior LOW runs saw the filter cause but included inaccurate boolean examples.",
+      "The initially held-out source was reused during tuning; it is no longer an untouched final validation set.",
+      "Case335 now has actual imported helper context and original package layout. Target source bytes are unchanged, but evaluation conditions improved; this is not a controlled single-factor study.",
+      "No new AI reviews were published; owner selection remains required.",
+      "Old adapter503 reports could represent HTTP503 or mapped network/timeouts. New diagnostics distinguish these."
+    ]
+  }
+}

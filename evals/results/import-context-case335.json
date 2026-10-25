@@ -1,0 +1,113 @@
+{
+  "phase": "Imported-context comparison, target bytes unchanged; package layout and supporting helper added",
+  "sample": "case-335",
+  "run_id": 40171716731,
+  "head": "80cc885cf858ecee70b008ad190670d8ccb35d55",
+  "reviewer_sha": "10d531c1bdc7f321f6cf08bc3479ad02f9cfdb2b",
+  "diagnostics": {
+    "status": "partial",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "partial",
+        "detail": "2 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "partial",
+        "detail": "0 candidates; tool investigation missing"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "All candidates assessed"
+      }
+    },
+    "errors": [
+      "correctness candidate rejected (compress_research retry loop strips the compression prompt instruction when truncating history): Evidence range outside delivered source or exceeds 40 lines"
+    ],
+    "scope_notes": [
+      "read_source: Requested source unavailable or outside limits"
+    ],
+    "usage": {
+      "requests": 12,
+      "input_tokens": null,
+      "output_tokens": null,
+      "model_requests": {
+        "gemini-3.6-flash": 6,
+        "gemini-3.5-flash-lite": 6
+      },
+      "elapsed_seconds": 123.95
+    },
+    "findings": [
+      {
+        "id": "a2b917797f46",
+        "title": "Hardcoded 'or True' in supervisor_tools exception handler causes immediate graph termination on any error",
+        "category": "correctness",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+        "line": 332,
+        "verification": "supported",
+        "end_line": 342,
+        "evidence": [
+          {
+            "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+            "start_line": 332,
+            "end_line": 342,
+            "excerpt": "        except Exception as e:\n            # Handle research execution errors\n            if is_token_limit_exceeded(e, configurable.research_model) or True:\n                # Token limit exceeded or other error - end research phase\n                return Command(\n                    goto=END,\n                    update={\n                        \"notes\": get_notes_from_tool_calls(supervisor_messages),\n                        \"research_brief\": state.get(\"research_brief\", \"\")\n                    }\n                )",
+            "source": "source"
+          }
+        ],
+        "impact": "Any transient exception or tool execution error during sub-research task execution immediately aborts the entire research phase and terminates the supervisor workflow.",
+        "preconditions": "An exception (e.g., tool error, network failure, or API exception) occurs during ConductResearch execution in supervisor_tools.",
+        "explanation": "In supervisor_tools, the exception handler for delegated research execution contains 'if is_token_limit_exceeded(e, configurable.research_model) or True:'. The 'or True' disjunction ensures that any exception evaluates to true, forcing the supervisor graph to return Command(goto=END). This prevents error recovery, retries, or returning error ToolMessages to the supervisor model.",
+        "suggestion": "if is_token_limit_exceeded(e, configurable.research_model):\n    return Command(\n        goto=END,\n        update={\n            \"notes\": get_notes_from_tool_calls(supervisor_messages),\n            \"research_brief\": state.get(\"research_brief\", \"\")\n        }\n    )"
+      },
+      {
+        "id": "25f236e21ddd",
+        "title": "Incorrect model name passed to token limit check in compress_research",
+        "category": "correctness",
+        "severity": "medium",
+        "source": "head",
+        "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+        "line": 565,
+        "verification": "supported",
+        "end_line": 574,
+        "evidence": [
+          {
+            "path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+            "start_line": 565,
+            "end_line": 574,
+            "excerpt": "        except Exception as e:\n            synthesis_attempts += 1\n            \n            # Handle token limit exceeded by removing older messages\n            if is_token_limit_exceeded(e, configurable.research_model):\n                researcher_messages = remove_up_to_last_ai_message(researcher_messages)\n                continue\n            \n            # For other errors, continue retrying\n            continue",
+            "source": "source"
+          }
+        ],
+        "impact": "Token limit exceeded exceptions raised by the compression model may not be recognized if the research model uses a different model provider.",
+        "preconditions": "configurable.compression_model and configurable.research_model belong to different model providers (e.g., Anthropic vs OpenAI), and compression_model raises a context/token limit exception.",
+        "explanation": "In compress_research, synthesizer_model is created using configurable.compression_model. However, when catching exceptions inside the retry loop, is_token_limit_exceeded(e, configurable.research_model) is invoked with configurable.research_model. Because is_token_limit_exceeded uses the model prefix to select provider-specific error checks, mismatched model identifiers cause token limit detection to fail.",
+        "suggestion": "if is_token_limit_exceeded(e, configurable.compression_model):\n    researcher_messages = remove_up_to_last_ai_message(researcher_messages)\n    continue"
+      }
+    ]
+  },
+  "assistant_assessment": {
+    "matched_pre_labeled_issue_ids": [
+      "wrong-compression-model"
+    ],
+    "missed_pre_labeled_issue_ids": [
+      "mutated-state-messages"
+    ],
+    "owner_judgment_pending": true,
+    "notes": [
+      "Provider-specific token limit helper is now present and supports the wrong-model finding.",
+      "The previous ResearchComplete absence claim is not reported; helper context includes that tool.",
+      "The unconditional exception finding is a real additional defect, but its suggested snippet again omits propagation of unexpected exceptions. Human fix review remains necessary.",
+      "One candidate exceeded the40-line evidence range and was rejected. One read_source failure and missing security investigation keep the report partial."
+    ]
+  }
+}

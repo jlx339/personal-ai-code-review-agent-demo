@@ -1,0 +1,82 @@
+{
+  "phase": "Cause-line protocol, Lite LOW. No functional finding; broad test-gap rejected. The original reference behavior target remains unmatched.",
+  "run_id": 40173536779,
+  "diagnostics": {
+    "status": "complete",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "All candidates assessed"
+      }
+    },
+    "errors": [],
+    "scope_notes": [],
+    "usage": {
+      "requests": 10,
+      "input_tokens": 84575,
+      "output_tokens": 508,
+      "model_requests": {
+        "gemini-3.5-flash-lite": 10
+      },
+      "review_profile": {
+        "primary_model": "gemini-3.5-flash-lite",
+        "reasoning_model": "gemini-3.5-flash-lite",
+        "reasoning_thinking": "LOW"
+      },
+      "elapsed_seconds": 47.75
+    },
+    "verification_decisions": [
+      {
+        "id": "bd270accd34b",
+        "previous_id": "bd270accd34b",
+        "status": "rejected",
+        "category": "tests",
+        "severity": "high",
+        "reason": "Missing test coverage is not a functional code defect and is often handled in separate test suites or tasks; code review instructions require rejecting non-code findings or claims about absent tests unless a specific correctness failure is demonstrated."
+      }
+    ],
+    "findings": [
+      {
+        "id": "bd270accd34b",
+        "title": "Missing test coverage for ToolRetryMiddleware",
+        "category": "tests",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_38845/tool_retry.py",
+        "line": 31,
+        "verification": "rejected",
+        "end_line": 31,
+        "evidence": [
+          {
+            "path": "eval_samples/case_38845/tool_retry.py",
+            "start_line": 29,
+            "end_line": 33,
+            "excerpt": "\n\nclass ToolRetryMiddleware(AgentMiddleware[AgentState[ResponseT], ContextT, ResponseT]):\n    \"\"\"Middleware that automatically retries failed tool calls with configurable backoff.\n",
+            "source": "source"
+          }
+        ],
+        "impact": "Untested tool retry middleware logic could fail under error conditions, API failures, or retry limits without detection.",
+        "preconditions": "New ToolRetryMiddleware implementation added in eval_samples/case_38845/tool_retry.py without corresponding unit tests in the test suite.",
+        "explanation": "A new middleware component implementing synchronous and asynchronous tool retries, exponential backoff, jitter, and failure handling was added, but no unit tests were added under tests/ to verify its correct behavior.",
+        "suggestion": "None"
+      }
+    ]
+  },
+  "owner_judgment_pending": true
+}

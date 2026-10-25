@@ -1,0 +1,9 @@
+{
+  "phase": "Bounded Flash3.8 endpoint recheck after timeout diagnostic correction",
+  "run_id": 40176494107,
+  "log_lines": [
+    "2026-10-25T08:26:10.4595871Z MODEL_ENDPOINT_PROBE={\"model\": \"gemini-3.8-flash\", \"attempts\": 1, \"timeout_seconds\": 90, \"available\": false, \"error_kind\": \"timeout\", \"elapsed_seconds\": 90.16}",
+    "2026-10-25T08:26:10.4597200Z Comparison stopped after one failed probe; no quality score or publication."
+  ],
+  "assessment": "One static-reply probe with a90-second timeout did not complete. Error is now classified as timeout, not an actualHTTP503 response. Original-sample comparisons were correctly skipped. No quality score, publication, paid fallback or billing setup occurred."
+}

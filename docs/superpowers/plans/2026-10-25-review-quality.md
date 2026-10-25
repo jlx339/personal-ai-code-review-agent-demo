@@ -1,6 +1,6 @@
 # Review Quality Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Improve detection of real bugs while retaining strict source and publication boundaries.
 
@@ -28,26 +28,26 @@
 
 Files: create `src/ai_review/evidence.py`, `src/ai_review/context.py`, `tests/test_evidence.py`, `tests/test_context.py`; modify tools and agents.
 
-- [ ] Write failing tests for exact referenced quotes, unknown/out-of-window references, secret masking, function context, and truncation.
-- [ ] Run focused tests and confirm failures before implementation.
-- [ ] Implement EvidenceCatalog.register/resolve and build_context(snapshot,catalog,limit=60000).
-- [ ] Add references to read_source and resolve specialist output through the catalog; preserve existing report schema.
-- [ ] Run full suite and commit.
+- [x] Write failing tests for exact referenced quotes, unknown/out-of-window references, secret masking, function context, and truncation.
+- [x] Run focused tests and confirm failures before implementation.
+- [x] Implement EvidenceCatalog.register/resolve and build_context(snapshot,catalog,limit=60000).
+- [x] Add references to read_source and resolve specialist output through the catalog; preserve existing report schema.
+- [x] Run full suite and commit.
 
 ### Task 2: Diagnostics and verification
 
 Files: agents, validation, report, prompts, graph/report tests.
 
-- [ ] Reproduce missing rejection details and unsupported severity/fix acceptance with failing tests.
-- [ ] Record per-candidate diagnostic reasons, validate verifier severity and corrected suggestion atomically, and supply contextual source around findings.
-- [ ] Run full suite, package build, and independent review; fix important findings before deployment.
-- [ ] Commit and update trusted default branch with expected-head lease.
+- [x] Reproduce missing rejection details and unsupported severity/fix acceptance with failing tests.
+- [x] Record per-candidate diagnostic reasons, validate verifier severity and corrected suggestion atomically, and supply contextual source around findings.
+- [x] Run full suite, package build, and independent review; fix important findings before deployment.
+- [x] Commit and update trusted default branch with expected-head lease.
 
 ### Task 3: Live evaluation
 
 Files: evaluation manifest/results and project documentation.
 
-- [ ] Rerun unchanged historical samples sequentially and inspect supported findings against pinned source.
-- [ ] Prelabel a distinct unseen real sample, preserve license, run once, and inspect results.
-- [ ] Record actual detections/misses and remaining limitations. Keep all earlier outcomes.
-- [ ] Verify clean local state and remote writes; report whether real detection improved.
+- [x] Rerun unchanged historical samples sequentially and inspect supported findings against pinned source.
+- [x] Prelabel a distinct unseen real sample, preserve license, run once, and inspect results.
+- [x] Record actual detections/misses and remaining limitations. Keep all earlier outcomes.
+- [x] Verify clean local state and remote writes; report whether real detection improved.

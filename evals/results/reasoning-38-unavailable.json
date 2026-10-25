@@ -70,5 +70,6 @@
       }
     ]
   },
-  "assessment": "All six Gemini3.8 attempts failed HTTP503. No stronger-model correctness or verifier verdict was available. Preserve incomplete findings and do not publish. Subsequent comparison selects allowlisted free Gemini3.6 explicitly, without an automatic paid fallback."
+  "assessment": "All six Gemini3.8 attempts failed HTTP503. No stronger-model correctness or verifier verdict was available. Preserve incomplete findings and do not publish. Subsequent comparison selects allowlisted free Gemini3.6 explicitly, without an automatic paid fallback.",
+  "diagnostic_caveat": "At this revision the adapter also mapped network/timeouts to status503. The failure proves requests did not complete, not that every response was a genuine serverHTTP503. New code distinguishes transport errors."
 }

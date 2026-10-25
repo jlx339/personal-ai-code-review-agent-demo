@@ -1,6 +1,6 @@
 # Evaluation on Real Python AI Changes
 
-Status: Three distinct historical real-code samples executed. All reports were partial. The quality target was not met. Source-based expected labels precede execution; independent owner judgments remain pending.
+Status: The updated HIGH profile detects genuine source-grounded defects and matches 1 of 3 original high-severity reference targets. The quality target remains unmet. Source-based expected labels precede execution; independent owner judgments remain pending. See [latest quality results](review-quality-results.md).
 
 ## Dataset selection
 
@@ -30,7 +30,7 @@ Run separate controlled failures for rate limits, invalid model output, unavaila
 | Gemini authentication | Owner successfully ran a one-request connection check. |
 | Core regression tests | Run `pytest -q`; latest counts are recorded in the build log. |
 | Three real samples | Three distinct source hashes, pinned in `evals/manifest.json`, reviewed in PRs #2, #4, and #5. |
-| Real model review precision/recall | Assistant assessment: 0/3 pre-labeled high-severity targets matched. Human-labeled actionable precision undefined; owner judgments pending. |
+| Real model review precision/recall | Initial comparison: 0/3 high targets. Latest HIGH comparison: 1/3. Human-labeled precision remains undefined; owner judgments pending. |
 | LangGraph integration | Local real-graph test passed after dependencies installed. |
 | GitHub analysis and selected publication | Verified on synthetic PR #1: analysis 40167343339 was partial; owner-selected publication 40167781789 succeeded. |
 | Final demo and Google Doc | Not recorded or created. |
@@ -43,7 +43,7 @@ Expected issues were assessed from pinned source and upstream fixes before model
 
 An initial candidate sample from upstream PR #286 was byte-identical to the #335 source despite a different commit SHA. A source-hash check detected the duplicate. Its runs remain recorded as repeat measurements, but are excluded from distinct-sample counts and aggregate recall. The replacement LangChain sample has its own pre-run labels and license.
 
-## Recorded outcomes
+## Earlier baseline outcomes
 
 | Distinct sample | Latest run | Report | Pre-labeled target outcome |
 | --- | --- | --- | --- |
@@ -54,3 +54,9 @@ An initial candidate sample from upstream PR #286 was byte-identical to the #335
 The first sample's other finding identifies an unconditional exception-handling branch in the actual source. The assistant assessed its critical severity as overstated and its suggested fix as incomplete. It was not matched retroactively to the pre-run target list or published. The owner has not independently labeled actionability, so precision remains undefined. Observed recall against the three pre-labeled high targets is 0/3; overall pre-labeled issues matched is 0/4 including one medium target.
 
 Baseline and follow-up diagnostics are committed under `evals/results/`. Follow-up runs used a recovery change that asks early-answer specialists to inspect source with a tool. Investigation completion improved, but known-issue detection did not meet the target. Deterministic evidence rejection prevented unsupported candidates from becoming publishable. Further work should diagnose exact evidence failures, improve model judgment, and broaden independently judged samples. Passing application tests does not resolve these model-quality failures.
+
+## Latest HIGH profile
+
+`evals/results/final-high-comparison.json` retains the complete four-sample comparison. Case #335 found the wrong-model target and the additional unconditional exception defect; case #299 found a conditional empty-tool-call indexing risk instead of its reference target; #38845 retained no supported finding; the configuration sample missed both targets. The added helper/package context in #335 corrects an earlier fixture omission without changing target source bytes. Do not pool the best results across profiles into a single accuracy claim. The originally held-out configuration source was reused during tuning.
+
+The test-gap verifier policy now explicitly permits concrete missing-test recommendations without an existing functional bug. A vague class-level request to add tests is still rejected when inspected evidence and assertions are insufficient. A later one-shot Flash 3.8 endpoint probe timed out at90 seconds, so that additional profile comparison was skipped and not scored.

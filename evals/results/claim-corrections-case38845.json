@@ -1,0 +1,50 @@
+{
+  "phase": "Explicit valid test-gap policy, Lite LOW. No supported finding; source-search truncation remains visible.",
+  "run_id": 40174314955,
+  "diagnostics": {
+    "status": "partial",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "partial",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "No source-validated candidates to verify"
+      }
+    },
+    "errors": [],
+    "scope_notes": [
+      "search_source: output truncated"
+    ],
+    "usage": {
+      "requests": 9,
+      "input_tokens": 76855,
+      "output_tokens": 185,
+      "model_requests": {
+        "gemini-3.5-flash-lite": 9
+      },
+      "review_profile": {
+        "primary_model": "gemini-3.5-flash-lite",
+        "reasoning_model": "gemini-3.5-flash-lite",
+        "reasoning_thinking": "LOW"
+      },
+      "elapsed_seconds": 41.64
+    },
+    "verification_decisions": [],
+    "findings": []
+  },
+  "owner_judgment_pending": true
+}

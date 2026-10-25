@@ -14,7 +14,7 @@ GitHub Actions starts a trusted base-branch reviewer when an owned, same-reposit
 
 The reviewer treats code and tool output as untrusted text. It does not import or run the submitted Python. Analysis has a Gemini API key and read-only GitHub access. A separate manual workflow has GitHub review-write access and publishes only explicitly selected supported finding IDs. It checks workflow provenance, current PR commit, exact evidence, and existing publication markers. It never approves or merges a PR.
 
-The current model is Gemini 3.5 Flash Lite, using the owner's configured free tier. Request, tool, context, and output limits bound each run. No additional paid service, vector database, persistent memory service, or voice tool is required.
+The default is Gemini 3.5 Flash Lite with HIGH thinking for correctness/verification and MINIMAL for security/tests, using the owner's configured free tier. Optional Flash3.6/3.8 profiles are explicit choices with smaller quotas. Request, tool, context, and output limits bound each run. No additional paid service, vector database, persistent memory service, or voice tool is required.
 
 ## Datasets
 
@@ -43,11 +43,11 @@ Live model runs exposed oversized responses, overly broad output categories, sho
 
 Live GitHub publication exposed differences between PR metadata and the trusted reusable-workflow revision. Publication now verifies these independently. The owner successfully selected and published both supported synthetic findings in run 40167781789; the posted review is linked in `docs/live-demo.md`.
 
-A reliability pass added independent verifier category assignment, correct finding identities after category changes, exact duplicate merging, recalculated inline anchors, readable Markdown quotes, and explicit prompt/scanner truncation. Regression tests reproduced each known defect before its fix. Specialists now receive an investigation request when they try to end early without tools. The latest local suite has 75 passing tests with no skips, including real LangGraph execution and package building. Those tests check application behavior; they do not prove model judgments correct.
+A reliability pass added independent verifier category assignment, correct finding identities after category changes, exact duplicate merging, recalculated inline anchors, readable Markdown quotes, and explicit prompt/scanner truncation. Regression tests reproduced each known defect before its fix. Specialists now receive an investigation request when they try to end early without tools. The latest local suite has 109 passing tests with no skips, including real LangGraph execution and package building. Those tests check application behavior; they do not prove model judgments correct.
 
 ## Results and limitations
 
-All three distinct reports were partial. None matched the three pre-labeled high-severity targets; none matched the additional medium target. One other source-supported exception-handling finding was retained. Its severity and suggested fix also need human inspection. Requiring investigation improved specialist tool use, but did not meet the detection target. See `docs/evaluation.md` and the committed baseline/follow-up diagnostics. Assistant-assessed judgments require owner review before they are described as human benchmark labels; human-labeled precision remains undefined.
+The initial three-distinct-sample round matched none of the three high-severity reference targets. The final HIGH profile matched the wrong-model token-limit target and found an additional genuine unconditional-exception defect, with exact source lines and source-checked fixes in run 40175006325. Original high-target matches are now 1/3, below the 70% target. The HIGH configuration run missed both reference targets. Earlier LOW runs found the numeric-zero filtering cause but included inaccurate boolean examples. These misses and mistakes remain in the record. Owner judgments are pending, so human-labeled precision is undefined. See `docs/review-quality-results.md` and the raw evaluation results.
 
 The workflow already demonstrates read-only analysis, source-grounded findings, failure reporting, and owner-selected publication. The model can miss genuine bugs or assign the wrong category, even when a workflow completes successfully. No claim of bug-free software or guaranteed detection is made. Coverage means inspection of tests and missing-test suggestions; reviewed code is not executed to measure runtime coverage.
 
@@ -57,3 +57,9 @@ The workflow already demonstrates read-only analysis, source-grounded findings, 
 - Three-real-sample results: recorded, with misses and partial reports visible; the quality target is not met.
 - Google Doc: copy this draft into a Google Doc, check the final results, and share its link.
 - Video: record at most five minutes using `docs/demo-script.md`, showing a genuine report, owner approval, published findings, and one limitation.
+
+## Final lessons
+
+Matching a quotation is not enough. The reviewer also needs callers, imported definitions, real defaults, valid triggers, and a complete fix. An omitted helper caused a false ResearchComplete absence claim; providing the real pinned helper let the reviewer challenge it. Source references now produce application-owned quotations, verifier reasons are visible, and optional claim corrections cannot move evidence anchors. The latest default analysis times were 41–71 seconds per sample, excluding setup. The original accuracy target remains unmet, and the initially held-out source was reused during tuning.
+
+Flash 3.6 reached its daily free quota. The old adapter also mapped network/timeouts to 503; new diagnostics distinguish them. A one-attempt Flash 3.8 probe timed out after 90 seconds and skipped the comparison without claiming a quality score. No billing was enabled. Independent code review found no important remaining issue in the inspected application flow; this does not prove model judgments correct.

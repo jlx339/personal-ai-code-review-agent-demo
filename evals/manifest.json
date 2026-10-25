@@ -1,5 +1,5 @@
 {
-  "status": "Three distinct real-code samples executed; quality target not met. See evals/results/follow-up.json.",
+  "status": "Improved real source-grounded detection; original benchmark target remains unmet. Owner judgments pending.",
   "method": "Three distinct full unmodified historical Python files from two MIT projects, introduced as new files in owned disposable PRs. Original introducing diffs are not reproduced. Expected labels precede execution. Repeated byte-identical source is excluded from distinct-sample counts. Correctness-focused; no security or benign-case performance claim.",
   "samples": [
     {
@@ -13,16 +13,18 @@
         "src/open_deep_research/deep_researcher.py"
       ],
       "reviewed_upstream_sha": "20aaa0d422bd290c83f93574810ef1244e8d5955",
-      "evaluation_path": "eval_samples/case_335/deep_researcher.py",
+      "evaluation_path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
       "expected_issues_file": "evals/expected/case-335.expected.json",
       "provenance_file": "evals/expected/case-335.json",
-      "status": "executed; partial; no pre-labeled issue matched",
+      "status": "HIGH profile evaluated; see per-run findings, partial checks and misses",
       "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/2",
       "initial_evaluation_head": "0f44bbfa80dd570422ec0faed929157abc138707",
       "baseline_run_id": 40168318624,
       "source_sha256": "af128d5d8773008d021b6ef7562e9fb90a45f7eb5e886483d1e6e835223275e0",
-      "latest_evaluation_head": "259f2f47e8141220c8f7072521906eb9e0e1b5fb",
-      "latest_run_id": 40168632697
+      "latest_evaluation_head": "cb9d2ef83fe3f92923b8e69e493d3462496021c4",
+      "latest_run_id": 40175006325,
+      "context_provenance": "evals/context-provenance.json",
+      "latest_result": "evals/results/final-high-comparison.json"
     },
     {
       "id": "case-299",
@@ -38,13 +40,14 @@
       "evaluation_path": "eval_samples/case_299/multi_agent.py",
       "expected_issues_file": "evals/expected/case-299.expected.json",
       "provenance_file": "evals/expected/case-299.json",
-      "status": "executed; partial; no pre-labeled issue matched",
+      "status": "HIGH profile evaluated; see per-run findings, partial checks and misses",
       "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/4",
       "initial_evaluation_head": "4540c4909e33b8747a3b304654394d50b56e3524",
       "baseline_run_id": 40168490335,
       "source_sha256": "84a72b85f2c7e74b691fbc81362f9f840b08b9ec4908b6e66bcf7c95c262e9f0",
-      "latest_evaluation_head": "bf13f570ac8653721677ee40eaefe9064bf5a75c",
-      "latest_run_id": 40168831878
+      "latest_evaluation_head": "67edd3658cf9adf46574dc2b9764f524fc929a0d",
+      "latest_run_id": 40175588332,
+      "latest_result": "evals/results/final-high-comparison.json"
     },
     {
       "id": "case-38845",
@@ -60,11 +63,12 @@
       "evaluation_path": "eval_samples/case_38845/tool_retry.py",
       "expected_issues_file": "evals/expected/case-38845.expected.json",
       "provenance_file": "evals/expected/case-38845.json",
-      "status": "executed; partial; no pre-labeled issue matched",
+      "status": "HIGH profile evaluated; see per-run findings, partial checks and misses",
       "source_sha256": "914bcc26a4e3757883d5fe223c33dd6eb894ec27db40bc2b92d1aadd7b8f8ce4",
       "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/5",
-      "latest_evaluation_head": "eae54c48a9ed5a1dab2386306cadd31065f0ed35",
-      "latest_run_id": 40169020180
+      "latest_evaluation_head": "134888cef2ff4b6386532ed2385b8685fa1b1b8a",
+      "latest_run_id": 40175591660,
+      "latest_result": "evals/results/final-high-comparison.json"
     }
   ],
   "required_samples": 3,
@@ -105,9 +109,11 @@
       "reviewed_upstream_sha": "d337ae32ed4ff8f4c6fbe192ba3bf1b2d6610799",
       "evaluation_path": "eval_samples/case_311/configuration.py",
       "expected_issues_file": "evals/expected/case-311-heldout.expected.json",
-      "status": "held-out labels prepared before first live model run; model inputs do not contain labels",
+      "status": "First used as held-out sample; later reused during tuning. HIGH run missed both reference targets.",
       "upstream_fix_merged": false,
-      "source_sha256": "8e9eb6d140746857e24923f4211d01e0ac5df5f9d461774e99b1dbc64699395c"
+      "source_sha256": "8e9eb6d140746857e24923f4211d01e0ac5df5f9d461774e99b1dbc64699395c",
+      "latest_run_id": 40175008782,
+      "latest_evaluation_head": "fa3214d11df8c25f2d1cd6f3945d9ba648a3cca3"
     }
   ]
 }

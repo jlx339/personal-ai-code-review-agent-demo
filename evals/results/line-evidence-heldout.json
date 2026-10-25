@@ -1,0 +1,82 @@
+{
+  "phase": "Cause-line protocol, Lite LOW. Core numeric-zero override loss exists. Boolean-default example is unsupported because actual boolean defaults are False; do not publish that example verbatim.",
+  "run_id": 40173539651,
+  "diagnostics": {
+    "status": "complete",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "All candidates assessed"
+      }
+    },
+    "errors": [],
+    "scope_notes": [],
+    "usage": {
+      "requests": 9,
+      "input_tokens": 29787,
+      "output_tokens": 550,
+      "model_requests": {
+        "gemini-3.5-flash-lite": 9
+      },
+      "review_profile": {
+        "primary_model": "gemini-3.5-flash-lite",
+        "reasoning_model": "gemini-3.5-flash-lite",
+        "reasoning_thinking": "LOW"
+      },
+      "elapsed_seconds": 43.35
+    },
+    "verification_decisions": [
+      {
+        "id": "e18dba33af0c",
+        "previous_id": "e18dba33af0c",
+        "status": "supported",
+        "category": "correctness",
+        "severity": "high",
+        "reason": "Filtering by `if v` drops valid falsy configuration values such as `False` or `0`, preventing users from overriding defaults with these values."
+      }
+    ],
+    "findings": [
+      {
+        "id": "e18dba33af0c",
+        "title": "Falsy configuration values (like False or 0) are dropped by `if v` filtering",
+        "category": "correctness",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_311/configuration.py",
+        "line": 67,
+        "verification": "supported",
+        "end_line": 67,
+        "evidence": [
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 65,
+            "end_line": 69,
+            "excerpt": "            if f.init\n        }\n        return cls(**{k: v for k, v in values.items() if v})\n\n@dataclass(kw_only=True)",
+            "source": "source"
+          }
+        ],
+        "impact": "Boolean flags (e.g. `include_source_str`, `ask_for_clarification`) and integer settings set to 0 cannot be configured to `False` or `0` because they evaluate to falsy and are filtered out, causing them to fall back unexpectedly to default values.",
+        "preconditions": "A user passes `include_source_str=False` or `ask_for_clarification=False` via `configurable` or environment variables when it defaults to `True`, or an integer setting is set to 0.",
+        "explanation": "Line 67 filters out any configuration values where `v` is falsy (`{k: v for k, v in values.items() if v}`). In Python, `False` and `0` are falsy, so they are excluded from the dictionary passed to `cls(**...)`. As a result, dataclass fields take their default values instead of the user-provided `False` or `0`.",
+        "suggestion": "return cls(**{k: v for k, v in values.items() if v is not None})"
+      }
+    ]
+  },
+  "owner_judgment_pending": true
+}

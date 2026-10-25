@@ -2,6 +2,8 @@
 
 Record only after live setup and evaluation. Use actual reports; distinguish any scripted failure demonstration from a live model review.
 
+Current source-checked demo: [real PR #2 HIGH run 40175006325](https://github.com/jlx339/personal-ai-code-review-agent-demo/actions/runs/40175006325). It retained an unconditional exception-handler bug (`d96300f55fb3`) and a wrong compression-model check (`73529e1e478f`). Inspect both before selecting either for publication. The report is partial because security investigation was incomplete; do not present it as a complete clean review. The latest comparison matches 1 of 3 original high targets and misses the configuration targets; show those limits rather than claiming the quality target passed. Verify the PR head and artifact availability before recording; publication rejects stale heads.
+
 - 0:00–0:35: Explain the problem: personal Python AI projects need checks for failure handling, unsafe tools, and missing tests. Introduce the three reviewers.
 - 0:35–1:10: Show the architecture and the boundary between autonomous read-only analysis and human-selected publication.
 - 1:10–2:15: Open a real small Python PR, trigger the review, and show agent/tool events plus the completed artifact. If waiting takes too long, use a genuine earlier run and state that clearly.

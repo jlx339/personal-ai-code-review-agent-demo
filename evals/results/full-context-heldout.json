@@ -1,0 +1,83 @@
+{
+  "phase": "Full bounded verifier context before line-only evidence format",
+  "run_id": 40172952876,
+  "diagnostics": {
+    "status": "complete",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "All candidates assessed"
+      }
+    },
+    "errors": [],
+    "scope_notes": [],
+    "usage": {
+      "requests": 10,
+      "input_tokens": 31948,
+      "output_tokens": 610,
+      "model_requests": {
+        "gemini-3.5-flash-lite": 10
+      },
+      "review_profile": {
+        "primary_model": "gemini-3.5-flash-lite",
+        "reasoning_model": "gemini-3.5-flash-lite",
+        "reasoning_thinking": "LOW"
+      },
+      "elapsed_seconds": 48.35
+    },
+    "verification_decisions": [
+      {
+        "id": "6959f29e5832",
+        "previous_id": "6959f29e5832",
+        "status": "supported",
+        "category": "correctness",
+        "severity": "medium",
+        "reason": "Filtering with `if v` drops falsy values such as `False` or `0`, preventing users from overriding default configuration options with explicit falsy values."
+      }
+    ],
+    "findings": [
+      {
+        "id": "6959f29e5832",
+        "title": "Configuration values filtering removes falsy defaults like False or 0",
+        "category": "correctness",
+        "severity": "medium",
+        "source": "head",
+        "path": "eval_samples/case_311/configuration.py",
+        "line": 62,
+        "verification": "supported",
+        "end_line": 67,
+        "evidence": [
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 62,
+            "end_line": 67,
+            "excerpt": "        values: dict[str, Any] = {\n            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))\n            for f in fields(cls)\n            if f.init\n        }\n        return cls(**{k: v for k, v in values.items() if v})",
+            "source": "source"
+          }
+        ],
+        "impact": "Boolean flags or integer values set to False or 0 (such as include_source_str=False or max_structured_output_retries=0) are dropped by `if v`, causing them to unexpectedly revert to the dataclass field defaults instead of respecting user overrides or environment variables.",
+        "preconditions": "A user passes a configuration where a boolean or numeric parameter is explicitly set to False, 0, or an empty string, or sets an environment variable that evaluates to a falsy value.",
+        "explanation": "The method `from_runnable_config` builds a dictionary of values and filters them using `if v`. In Python, falsy values like `False`, `0`, or `0.0` evaluate to `False`, so they are stripped out. Consequently, `cls(**{k: v for k, v in values.items() if v})` will not pass these parameters to the dataclass constructor, ignoring the user's explicit intent or environment variable.",
+        "suggestion": "return cls(**{k: v for k, v in values.items() if v is not None})"
+      }
+    ]
+  },
+  "assistant_assessment": "Supported explicit numeric-zero override loss is source-grounded; changing if v to if v is not None addresses this filter defect. Boolean/default and environment wording remains broader than the strongest demonstrated trigger. Environment type-parsing target was not reported. Owner judgments pending.",
+  "owner_judgment_pending": true
+}
