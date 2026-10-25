@@ -2,7 +2,7 @@
 
 A GitHub Actions reviewer for personal Python AI projects. Three specialists investigate bugs, security risks, and missing tests. They use read-only tools, then a verifier challenges their findings. You receive a prioritized report and choose which findings to publish.
 
-**Current status:** Package installation, wheel contents, and real LangGraph orchestration pass the local test suite. Live Gemini review, GitHub Actions execution, and evaluation on three real code changes still need verification. This is not yet a finished assignment submission.
+**Current status:** Package installation, wheel contents, and real LangGraph orchestration pass the local test suite. A live Gemini/GitHub Actions smoke test produced a partial report with two supported findings. Human-approved publication and evaluation on three real code changes still need verification. This is not yet a finished assignment submission.
 
 ## What it does
 
@@ -70,3 +70,7 @@ Unit tests use synthetic fixtures and scripted API responses. They test failure 
 [Evaluation instructions](docs/evaluation.md) describe the separate three-real-sample benchmark. [Architecture](docs/architecture.md), [build log](docs/build-log.md), and [demo script](docs/demo-script.md) support the project submission. The submission also needs a Google Doc, GitHub link, and recorded demo of five minutes or less.
 
 Workflow files use JSON syntax, which is a valid YAML subset. This permits semantic configuration tests without a YAML parser. Action revisions are commit-pinned. The tests workflow may execute PR test code with a read-only token and no secrets; privileged analysis never checks out the PR revision.
+
+## Live demo
+
+[Demo repository](https://github.com/jlx339/personal-ai-code-review-agent-demo) · [Synthetic PR 1](https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/1) · [Recorded smoke-test results](docs/live-demo.md). The intentionally faulty PR should not be merged.

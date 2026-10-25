@@ -33,3 +33,9 @@ Install dependencies and commit `uv.lock`; verify actual LangGraph execution; ch
 ## Packaging correction and installed verification
 
 The owner's first setup run exposed missing Hatch wheel package selection: the distribution name differs from `src/ai_review`. Added explicit wheel package configuration. A packaging regression test reproduced the failure without that configuration and passed with it, checking the CLI and all four prompt files in the built wheel. The owner's cached dependencies enabled offline installation in the coding environment. The full installed suite now passes 55 tests, including the real LangGraph adapter and packaging test, with no skips. The generated `uv.lock` is included. Live Gemini review quality, Actions execution, and the three-real-sample benchmark remain pending.
+
+## Live GitHub smoke test
+
+Created a public demo baseline and a synthetic PR after the owner created the empty repository and added its Gemini secret. Baseline tests pass on GitHub; the deliberately broken PR's ordinary tests fail as expected. Live runs exposed PR-target metadata differences, short-file read-window handling, limited model output budget, and overly broad specialist categories. Each code correction has a local regression test. Source-directory search now supports bounded Python test discovery. Latest local suite: 65 passed.
+
+The latest recorded model review is partial, with two supported seeded-bug findings, truncated search context, and discarded unsupported candidates. Test-gap detection and category accuracy need improvement before claiming the full project acceptance targets. No comments were posted without the owner's selection. The synthetic smoke test does not replace evaluation on three real changes.
