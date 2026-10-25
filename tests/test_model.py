@@ -109,3 +109,17 @@ def test_same_model_can_reason_without_changing_ordinary_specialist_thinking():
 
 def test_unsupported_minimal_thinking_is_rejected_before_flash38_request():
     with pytest.raises(ValueError): model(lambda _:None).for_model('gemini-3.8-flash',thinking_level='MINIMAL')
+
+
+def test_high_thinking_has_room_for_reasoning_and_structured_findings():
+    def transport(body):
+        assert body['generationConfig']['thinkingConfig']['thinkingLevel']=='HIGH'
+        assert body['generationConfig']['maxOutputTokens']==16000
+        return 200,{'candidates':[{'content':{'parts':[{'text':'{}'}]}}]},{}
+    assert model(transport).for_model('gemini-3.5-flash-lite',thinking_level='HIGH').invoke([]).text=='{}'
+
+
+def test_network_timeout_is_not_mislabeled_as_an_http503_response():
+    m=model(lambda _:(0,{'kind':'timeout'},{}))
+    with pytest.raises(ModelError,match='timed out'): m.invoke([])
+    assert m.budget.calls==3

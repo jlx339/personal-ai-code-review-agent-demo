@@ -33,7 +33,8 @@ class ReviewModel:
             f'https://generativelanguage.googleapis.com/v1beta/models/{self.settings.model}:generateContent',
             data=json.dumps(body).encode(),headers={'Content-Type':'application/json','x-goog-api-key':self.key},method='POST')
         try:
-            with urllib.request.urlopen(req,timeout=45) as response:
+            timeout=90 if body.get('generationConfig',{}).get('thinkingConfig',{}).get('thinkingLevel')=='HIGH' else 45
+            with urllib.request.urlopen(req,timeout=timeout) as response:
                 raw=response.read(1000001)
                 if len(raw)>1000000:
                     raise ModelError('Model response exceeds limit')
@@ -44,8 +45,9 @@ class ReviewModel:
             except (ValueError,UnicodeError):
                 error={}
             return exc.code,error,dict(exc.headers)
-        except (urllib.error.URLError,TimeoutError):
-            return 503,{},{}
+        except (urllib.error.URLError,TimeoutError) as exc:
+            timed_out=isinstance(exc,TimeoutError) or isinstance(getattr(exc,'reason',None),TimeoutError)
+            return 0,{'kind':'timeout' if timed_out else 'connection'},{}
 
     def invoke(self,messages,tools=None,response_schema=None,system='',reserve_requests=0):
         if self.terminal_error:
@@ -53,7 +55,8 @@ class ReviewModel:
         strong=self.settings.model in ('gemini-3.6-flash','gemini-3.8-flash')
         level=self.settings.thinking_level or ('LOW' if strong else 'MINIMAL')
         reasoning=level!='MINIMAL'
-        config={'maxOutputTokens':max(self.settings.output_tokens,8000) if reasoning else self.settings.output_tokens,
+        cap=16000 if level=='HIGH' else 12000 if level=='MEDIUM' else 8000
+        config={'maxOutputTokens':max(self.settings.output_tokens,cap) if reasoning else self.settings.output_tokens,
             'thinkingConfig':{'thinkingLevel':level}}
         if response_schema:
             config.update(responseMimeType='application/json',responseJsonSchema=response_schema)
@@ -110,8 +113,11 @@ class ReviewModel:
                 return ModelResult(message,text,calls,normalized)
             error_text=json.dumps(data).lower()
             daily=status==429 and any(x in error_text for x in ('perday','per_day','daily','requestsperday'))
-            if status in (401,403,400,404) or daily or attempt==2 or status not in (429,500,502,503,504):
-                message=f'Model request failed (HTTP {status})' + ('; daily quota exhausted' if daily else '')
+            if status in (401,403,400,404) or daily or attempt==2 or status not in (0,429,500,502,503,504):
+                if status==0:
+                    message='Model request timed out' if isinstance(data,dict) and data.get('kind')=='timeout' else 'Model connection failed'
+                else:
+                    message=f'Model request failed (HTTP {status})' + ('; daily quota exhausted' if daily else '')
                 if daily or status in (400,401,403,404) or attempt==2:
                     self.terminal_error=message
                 raise ModelError(message)

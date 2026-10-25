@@ -24,6 +24,8 @@ def main(argv=None):
     analyze.add_argument('--reasoning-model',choices=['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash'],
         default=os.environ.get('AI_REVIEW_REASONING_MODEL','gemini-3.5-flash-lite'),
         help='Free-tier allowlisted model for correctness and verification; quotas differ')
+    analyze.add_argument('--reasoning-thinking',choices=['LOW','MEDIUM','HIGH'],
+        default=os.environ.get('AI_REVIEW_REASONING_THINKING','HIGH'),help='Reasoning effort for correctness and verification')
     publish=commands.add_parser('publish')
     publish.add_argument('--repository',default=os.environ.get('GITHUB_REPOSITORY'),required=not bool(os.environ.get('GITHUB_REPOSITORY')))
     publish.add_argument('--run-id',required=True)
@@ -48,7 +50,7 @@ def main(argv=None):
             print(json.dumps(asdict(result)))
         else:
             request=ReviewRequest(owner,repo,args.pr)
-            settings=Settings(reasoning_model=args.reasoning_model)
+            settings=Settings(reasoning_model=args.reasoning_model,reasoning_thinking=args.reasoning_thinking)
             key=os.environ.get('GEMINI_API_KEY','')
             if not key and args.prompt_key:
                 key=getpass.getpass('Gemini API key (hidden; not saved): ')

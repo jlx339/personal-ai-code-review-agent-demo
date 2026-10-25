@@ -7,6 +7,7 @@ class Settings:
     model: str = 'gemini-3.5-flash-lite'
     reasoning_model: str | None = 'gemini-3.5-flash-lite'
     thinking_level: str | None = None
+    reasoning_thinking: str = 'HIGH'
     max_requests: int = 12
     specialist_turns: int = 3
     verifier_turns: int = 2
@@ -25,5 +26,7 @@ class Settings:
             raise ValueError('Only the configured free-tier model allowlist is supported')
         if self.thinking_level not in (None,'MINIMAL','LOW','MEDIUM','HIGH') or (self.model=='gemini-3.8-flash' and self.thinking_level=='MINIMAL'):
             raise ValueError('Unsupported thinking level for model')
-        if any(v <= 0 for k, v in vars(self).items() if k not in ('model','reasoning_model','thinking_level')):
+        if self.reasoning_thinking not in ('LOW','MEDIUM','HIGH'):
+            raise ValueError('Unsupported reasoning thinking level')
+        if any(v <= 0 for k, v in vars(self).items() if k not in ('model','reasoning_model','thinking_level','reasoning_thinking')):
             raise ValueError('Limits must be positive')
