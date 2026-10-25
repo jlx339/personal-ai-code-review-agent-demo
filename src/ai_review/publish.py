@@ -53,7 +53,6 @@ def load_verified_report(client,repository,run_id,expected_workflow):
     if run['event']=='pull_request_target':
         prs=[pr for pr in run.get('pull_requests',[]) if pr.get('number')==report.pr_number]
         if (len(prs)!=1 or prs[0].get('base',{}).get('ref')!=default
-                or prs[0].get('base',{}).get('sha')!=report.reviewer_sha
                 or prs[0].get('head',{}).get('sha')!=report.head_sha
                 or run.get('head_sha')!=report.head_sha):
             raise ValueError('PR report does not match trusted base and reviewed head')

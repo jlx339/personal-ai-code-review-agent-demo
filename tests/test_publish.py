@@ -122,3 +122,15 @@ def test_pr_target_run_uses_base_revision_not_pr_head_as_reviewer_identity():
         return original(path)
     c.get=get
     assert load_verified_report(c,'me/demo','42','.github/workflows/analyze.yml').reviewer_sha=='d'*40
+
+
+def test_run_pr_base_can_be_older_than_the_trusted_worker_revision():
+    c=PublishClient()
+    original=c.get
+    def get(path):
+        value=original(path)
+        if path.endswith('/actions/runs/42'):
+            value['pull_requests'][0]['base']['sha']='b'*40
+        return value
+    c.get=get
+    assert load_verified_report(c,'me/demo','42','.github/workflows/analyze.yml').reviewer_sha=='d'*40
