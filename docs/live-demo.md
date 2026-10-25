@@ -10,9 +10,9 @@ The repository's Gemini secret has been configured by the owner. No API key is s
 
 Initial live reviews returned partial results, which were preserved rather than labeled clean. These runs exposed source-window handling, overly broad specialist output categories, and a mistaken assumption about GitHub run metadata. The publisher now separately checks the PR head and the trusted base-side reusable workflow revision.
 
-Only a completed supported finding from a reviewed artifact is eligible for manual publication. Open the latest AI code review run, inspect its summary, and run Publish approved AI findings from the default branch with the run ID and exact approved finding IDs. The assistant has not published any AI findings automatically.
+Only a supported, source-validated finding from a trusted completed analysis run is eligible for manual publication. Open the latest AI code review run, inspect its summary, and run Publish approved AI findings from the default branch with the run ID and exact approved finding IDs. The assistant has not published any AI findings automatically.
 
-This synthetic PR demonstrates the workflow. It is not the three-real-sample evaluation required for submission; that evaluation and the recorded demo remain outstanding.
+This synthetic PR demonstrates the workflow. It is not the three-real-sample evaluation required for submission; the three-distinct-sample evaluation is now recorded in `evals/results/final-high-comparison.json`. The video recording remains an owner step.
 
 ## Latest verified smoke test
 
@@ -32,3 +32,7 @@ Both were emitted under correctness by the model, although the path-containment 
 The owner manually approved and published both findings. [Publication run 40167781789](https://github.com/jlx339/personal-ai-code-review-agent-demo/actions/runs/40167781789) succeeded, and [review 5641796669](https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/1#pullrequestreview-5641796669) contains both selected IDs against the reviewed commit. This verifies the analysis → owner selection → publication path. Findings were not posted automatically.
 
 Follow-up hardening adds independent verifier category assignment, updates IDs after category correction, merges resulting exact duplicates, preserves readable quotes in Markdown, and makes prompt-context truncation explicit in the final partial report. These changes have regression tests; model quality must still be measured on real code.
+
+## Recording package
+
+Use [the 4:40 script](demo-script.md) and [pinned real-code evidence](demo-evidence.md). Lead with the two accurate real-code findings from run 40175006325; label this page’s existing published review as a separate synthetic workflow demonstration. See [submission checklist](submission-checklist.md) for the remaining handoff steps.
