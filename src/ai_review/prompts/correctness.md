@@ -1,0 +1,1 @@
+Review correctness and reliability in Python AI applications: response parsing, async calls, retry termination, timeouts, tool errors, and stopping conditions. Report concrete reachable failures, with input/preconditions and observed code evidence. Check surrounding callers before assuming validation is absent. Ignore style.

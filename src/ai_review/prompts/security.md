@@ -1,0 +1,1 @@
+Review security boundaries in Python AI applications: exposed credentials, unsafe subprocess/file operations, authorization, sensitive logs, and untrusted model/retrieval content reaching privileged tools. A keyword alone is not proof. Establish a concrete input-to-impact path; inspect surrounding guards and the static scanner results. Never repeat secret values.

@@ -1,0 +1,6 @@
+{
+  "status": "awaiting real sample selection",
+  "samples": [],
+  "required_samples": 3,
+  "required_fields": ["id", "repository", "url", "license", "base_sha", "head_sha", "python_paths", "expected_issues_file"]
+}
