@@ -1,0 +1,149 @@
+{
+  "phase": "baseline before early-answer investigation fix",
+  "assessment": "Assistant assessment; owner has not independently labeled findings",
+  "run_ids": {
+    "286": 40168419115,
+    "299": 40168490335,
+    "335": 40168318624
+  },
+  "samples": [
+    {
+      "id": "case-335",
+      "pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/2",
+      "run_id": 40168318624,
+      "diagnostics": {
+        "status": "partial",
+        "checks": {
+          "static_analysis": {
+            "status": "complete",
+            "detail": "Bandit completed"
+          },
+          "correctness": {
+            "status": "complete",
+            "detail": "1 candidates; tool investigation completed"
+          },
+          "security": {
+            "status": "partial",
+            "detail": "0 candidates; tool investigation missing"
+          },
+          "tests": {
+            "status": "complete",
+            "detail": "0 candidates; tool investigation completed"
+          },
+          "verifier": {
+            "status": "complete",
+            "detail": "All candidates assessed"
+          }
+        },
+        "errors": [],
+        "scope_notes": [
+          "Prompt source context truncated: eval_samples/case_335/deep_researcher.py"
+        ],
+        "usage": {
+          "requests": 9,
+          "input_tokens": 102225,
+          "output_tokens": 678,
+          "elapsed_seconds": 41.34
+        },
+        "findings": [
+          {
+            "id": "5cd704b64cd1",
+            "title": "Unconditional exception handler treats all exceptions as token limit exceeded",
+            "category": "correctness",
+            "severity": "high",
+            "source": "head",
+            "path": "eval_samples/case_335/deep_researcher.py",
+            "line": 332,
+            "verification": "supported"
+          }
+        ]
+      }
+    },
+    {
+      "id": "case-286",
+      "pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/3",
+      "run_id": 40168419115,
+      "diagnostics": {
+        "status": "partial",
+        "checks": {
+          "static_analysis": {
+            "status": "complete",
+            "detail": "Bandit completed"
+          },
+          "correctness": {
+            "status": "complete",
+            "detail": "1 candidates; tool investigation completed"
+          },
+          "security": {
+            "status": "partial",
+            "detail": "0 candidates; tool investigation missing"
+          },
+          "tests": {
+            "status": "complete",
+            "detail": "0 candidates; tool investigation completed"
+          },
+          "verifier": {
+            "status": "complete",
+            "detail": "No source-validated candidates to verify"
+          }
+        },
+        "errors": [
+          "Candidate evidence or impact is unsupported"
+        ],
+        "scope_notes": [
+          "Prompt source context truncated: eval_samples/case_286/deep_researcher.py"
+        ],
+        "usage": {
+          "requests": 7,
+          "input_tokens": 102195,
+          "output_tokens": 546,
+          "elapsed_seconds": 32.24
+        },
+        "findings": []
+      }
+    },
+    {
+      "id": "case-299",
+      "pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/4",
+      "run_id": 40168490335,
+      "diagnostics": {
+        "status": "partial",
+        "checks": {
+          "static_analysis": {
+            "status": "complete",
+            "detail": "Bandit completed"
+          },
+          "correctness": {
+            "status": "partial",
+            "detail": "0 candidates; tool investigation missing"
+          },
+          "security": {
+            "status": "partial",
+            "detail": "0 candidates; tool investigation missing"
+          },
+          "tests": {
+            "status": "complete",
+            "detail": "0 candidates; tool investigation completed"
+          },
+          "verifier": {
+            "status": "complete",
+            "detail": "No source-validated candidates to verify"
+          }
+        },
+        "errors": [],
+        "scope_notes": [],
+        "usage": {
+          "requests": 5,
+          "input_tokens": 52214,
+          "output_tokens": 71,
+          "elapsed_seconds": 21.54
+        },
+        "findings": []
+      }
+    }
+  ],
+  "expected_high_issues_found": 0,
+  "expected_high_issues_total": 3,
+  "unexpected_supported_finding": "case-335 found the same unconditional exception handler independently labeled in case-286. Assistant source inspection supports it; full artifact remains available for owner review.",
+  "limits": "All reports partial. Same project; two files overlap. Reference fixes unmerged. Baseline misses retained even after later iterations."
+}

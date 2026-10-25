@@ -74,7 +74,7 @@ class ReviewSession:
         return json.dumps({'files':files,'scope_notes':self.snapshot.scope_notes,
             'static_analysis':getattr(self,'static_results',None)})
 
-    def _loop(self,system,content,turns,schema=None):
+    def _loop(self,system,content,turns,schema=None,require_tool=False):
         messages=[{'role':'user','parts':[{'text':content}]}]
         used_tool=False
         repaired=False
@@ -95,6 +95,10 @@ class ReviewSession:
                         entry['id']=call['id']
                     results.append({'functionResponse':entry})
                 messages.append({'role':'user','parts':results})
+                continue
+            if require_tool and not used_tool and not last:
+                messages.append({'role':'user','parts':[{'text':
+                    'Investigation is required before a final answer. Use a read-only tool to inspect the changed source and its surrounding context. An empty findings list without investigation is incomplete. Preserve exact whitespace and line ranges when quoting evidence.'}]})
                 continue
             try:
                 raw=response.text.strip()
@@ -119,7 +123,7 @@ class ReviewSession:
             schema['properties']['findings']['items']['properties']['category']['enum']=[category]
             instruction+=f'\nYour assigned category is {category}. Report ONLY {category} findings; leave all other categories to their specialists.'
             output_instruction=OUTPUT_INSTRUCTION.replace('correctness|security|tests',category)
-            result,used=self._loop(instruction+'\n'+output_instruction,self.context(),self.settings.specialist_turns,schema)
+            result,used=self._loop(instruction+'\n'+output_instruction,self.context(),self.settings.specialist_turns,schema,require_tool=True)
             items=result.get('findings')
             if not isinstance(items,list) or len(items)>15:
                 raise ValueError('Missing/oversized findings list')

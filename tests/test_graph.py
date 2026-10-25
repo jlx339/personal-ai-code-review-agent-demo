@@ -56,9 +56,16 @@ def test_unapproved_tool_is_rejected():
 
 
 def test_no_findings_without_tool_is_not_clean():
-    s=session([text('{"findings":[]}')])
+    s=session([text('{"findings":[]}')]*3)
     s.review('correctness')
     assert s.checks['correctness']['status']=='partial'
+
+
+def test_early_empty_answer_gets_an_investigation_chance_before_finishing():
+    s = session([text('{"findings":[]}'), tool(), text('{"findings":[]}')])
+    s.review('correctness')
+    assert s.checks['correctness']['status'] == 'complete'
+    assert s.tools.events[0]['tool'] == 'inspect_python'
 
 
 def test_installed_langgraph_runs_the_full_node_sequence():
