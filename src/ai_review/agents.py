@@ -12,7 +12,7 @@ from ai_review.budget import BudgetExceeded
 
 TOOL_SCHEMAS=[
     dict(name='read_source',description='Read 1-based inclusive source lines at the pinned commit; max 200 lines.',parameters={'type':'object','properties':{'path':{'type':'string'},'source':{'type':'string','enum':['head','base']},'start_line':{'type':'integer'},'end_line':{'type':'integer'}},'required':['path','start_line','end_line']}),
-    dict(name='search_source',description='Search literal text in specified Python files.',parameters={'type':'object','properties':{'query':{'type':'string'},'source':{'type':'string','enum':['head','base']},'paths':{'type':'array','items':{'type':'string'}}},'required':['query','paths']}),
+    dict(name='search_source',description='Search literal text in Python files or directory prefixes such as tests/. Empty paths searches bounded inventory.',parameters={'type':'object','properties':{'query':{'type':'string'},'source':{'type':'string','enum':['head','base']},'paths':{'type':'array','items':{'type':'string'}}},'required':['query','paths']}),
     dict(name='inspect_python',description='Parse Python syntax without executing it.',parameters={'type':'object','properties':{'path':{'type':'string'}},'required':['path']}),
     dict(name='list_python_files',description='List repository Python and test paths; bounded inventory.',parameters={'type':'object','properties':{}}),
     dict(name='scan_security',description='Scan bounded Python paths using fixed Bandit rules without executing source.',parameters={'type':'object','properties':{'paths':{'type':'array','items':{'type':'string'}}},'required':['paths']}),

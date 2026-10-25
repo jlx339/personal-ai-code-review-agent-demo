@@ -60,8 +60,31 @@ class SnapshotTools:
         if not isinstance(query,str) or not 1<=len(query)<=200 or len(paths)>20:
             return ToolResult(False,error='Invalid search limits')
         results=[]
+        truncated=False
         try:
+            expanded=[]
             for path in paths:
+                if path.endswith('.py'):
+                    safe_path(path)
+                    expanded.append(path)
+                else:
+                    prefix=path.rstrip('/')
+                    if prefix!='.':
+                        safe_path(prefix)
+                    inventory=self.list_python_files()
+                    if not inventory.ok:
+                        raise ValueError('Inventory unavailable')
+                    expanded.extend(p for p in inventory.data if prefix=='.' or p.startswith(prefix+'/'))
+                    truncated=truncated or inventory.truncated
+            if not paths:
+                inventory=self.list_python_files()
+                if not inventory.ok:
+                    raise ValueError('Inventory unavailable')
+                expanded=inventory.data
+                truncated=inventory.truncated
+            expanded=list(dict.fromkeys(expanded))
+            truncated=truncated or len(expanded)>20
+            for path in expanded[:20]:
                 f=self._file(path)
                 content=f.base_content if source=='base' else f.content if source=='head' else None
                 if content is None:
@@ -71,7 +94,7 @@ class SnapshotTools:
                         results.append(dict(path=path,line=number,content=redact_source(line)[:500]))
                         if len(results)>=20:
                             return ToolResult(True,results,truncated=True)
-            return ToolResult(True,results)
+            return ToolResult(True,results,truncated=truncated)
         except (ValueError,RuntimeError,KeyError,UnicodeError):
             return ToolResult(False,error='Search source unavailable')
 

@@ -67,3 +67,11 @@ def test_read_source_can_request_a_window_larger_than_short_file():
     assert result.ok
     assert result.data['content']=='x=1'
     assert result.data['end_line']==1
+
+
+def test_search_accepts_a_bounded_test_directory():
+    t=tools()
+    t.snapshot.files['tests/test_app.py']=FileSnapshot('tests/test_app.py','def test_parse_answer(): pass\n',changed=False)
+    result=t.search_source('parse_answer',['tests/'])
+    assert result.ok
+    assert result.data==[{'path':'tests/test_app.py','line':1,'content':'def test_parse_answer(): pass'}]
