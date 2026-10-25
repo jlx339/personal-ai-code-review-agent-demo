@@ -92,3 +92,20 @@ def test_exhausted_provider_retries_stop_later_calls_in_the_same_run():
     with pytest.raises(ModelError): m.invoke([])
     with pytest.raises(ModelError): m.invoke([])
     assert m.budget.calls==3
+
+
+def test_same_model_can_reason_without_changing_ordinary_specialist_thinking():
+    configs=[]
+    def transport(body):
+        configs.append(body['generationConfig'])
+        return 200,{'candidates':[{'content':{'parts':[{'text':'{}'}]}}]},{}
+    m=model(transport);reasoning=m.for_model('gemini-3.5-flash-lite',thinking_level='LOW')
+    m.invoke([]);reasoning.invoke([])
+    assert configs[0]['thinkingConfig']['thinkingLevel']=='MINIMAL'
+    assert configs[1]['thinkingConfig']['thinkingLevel']=='LOW'
+    assert configs[1]['maxOutputTokens']==8000
+    assert m.budget.calls==2
+
+
+def test_unsupported_minimal_thinking_is_rejected_before_flash38_request():
+    with pytest.raises(ValueError): model(lambda _:None).for_model('gemini-3.8-flash',thinking_level='MINIMAL')

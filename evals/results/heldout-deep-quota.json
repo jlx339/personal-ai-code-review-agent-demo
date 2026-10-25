@@ -1,0 +1,79 @@
+{
+  "phase": "Reserved verification capacity exhausted model daily quota",
+  "run_id": 40172325886,
+  "head": "7d2fc64acc838b1197c6a926df15014e9e856dfb",
+  "diagnostics": {
+    "status": "partial",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "partial",
+        "detail": "BudgetExceeded"
+      },
+      "verifier": {
+        "status": "partial",
+        "detail": "ModelError"
+      }
+    },
+    "errors": [
+      "tests reviewer incomplete: Model request budget reserved for verification",
+      "Verifier incomplete; candidates are not publishable: Model request failed (HTTP 429); daily quota exhausted"
+    ],
+    "scope_notes": [],
+    "usage": {
+      "requests": 10,
+      "input_tokens": null,
+      "output_tokens": null,
+      "model_requests": {
+        "gemini-3.6-flash": 6,
+        "gemini-3.5-flash-lite": 4
+      },
+      "elapsed_seconds": 84.54
+    },
+    "findings": [
+      {
+        "id": "7476d68f9160",
+        "title": "Truthy filtering in configuration parser discards false and zero values",
+        "category": "correctness",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_311/configuration.py",
+        "line": 62,
+        "verification": "unverified",
+        "end_line": 67,
+        "evidence": [
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 62,
+            "end_line": 67,
+            "excerpt": "        values: dict[str, Any] = {\n            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))\n            for f in fields(cls)\n            if f.init\n        }\n        return cls(**{k: v for k, v in values.items() if v})",
+            "source": "source"
+          },
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 98,
+            "end_line": 103,
+            "excerpt": "        values: dict[str, Any] = {\n            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))\n            for f in fields(cls)\n            if f.init\n        }\n        return cls(**{k: v for k, v in values.items() if v})",
+            "source": "source"
+          }
+        ],
+        "impact": "User or runtime overrides set to `False` or `0` (e.g., `include_source_str=False`, `ask_for_clarification=False`, or numeric limits set to `0`) are filtered out and ignored, causing configuration instantiation to silently fall back to default values.",
+        "preconditions": "Calling `Configuration.from_runnable_config()` or `MultiAgentConfiguration.from_runnable_config()` with a config dict where boolean or numeric configurable parameters are set to `False` or `0`.",
+        "explanation": "Both `Configuration.from_runnable_config` and `MultiAgentConfiguration.from_runnable_config` filter extracted values using `{k: v for k, v in values.items() if v}`. In Python, `if v` evaluates boolean truthiness. When a parameter value in `configurable` is `False` or `0`, `bool(v)` evaluates to `False`, causing the key to be omitted from the kwargs passed to the dataclass constructor.",
+        "suggestion": "Filter out `None` values explicitly using `if v is not None` instead of checking boolean truthiness `if v`."
+      }
+    ]
+  },
+  "assessment": "Reservation prevented specialists from consuming the last3slots, but Flash3.6 daily quota was exhausted before verification. Candidate remains unverified. Default next comparison uses FlashLite LOW thinking, whose independently configured free quota is larger; no billing is enabled."
+}

@@ -24,9 +24,9 @@ class ReviewModel:
         self.key,self.settings,self.budget,self.transport=key,settings,budget,transport
         self.terminal_error=None
 
-    def for_model(self,name):
-        settings=replace(self.settings,model=name)
-        return self if name==self.settings.model else ReviewModel(self.key,settings,self.budget,self.transport)
+    def for_model(self,name,thinking_level=None):
+        settings=replace(self.settings,model=name,thinking_level=thinking_level)
+        return self if settings==self.settings else ReviewModel(self.key,settings,self.budget,self.transport)
 
     def _send(self,body):
         req=urllib.request.Request(
@@ -50,9 +50,11 @@ class ReviewModel:
     def invoke(self,messages,tools=None,response_schema=None,system='',reserve_requests=0):
         if self.terminal_error:
             raise ModelError(self.terminal_error)
-        reasoning=self.settings.model in ('gemini-3.6-flash','gemini-3.8-flash')
+        strong=self.settings.model in ('gemini-3.6-flash','gemini-3.8-flash')
+        level=self.settings.thinking_level or ('LOW' if strong else 'MINIMAL')
+        reasoning=level!='MINIMAL'
         config={'maxOutputTokens':max(self.settings.output_tokens,8000) if reasoning else self.settings.output_tokens,
-            'thinkingConfig':{'thinkingLevel':'LOW' if reasoning else 'MINIMAL'}}
+            'thinkingConfig':{'thinkingLevel':level}}
         if response_schema:
             config.update(responseMimeType='application/json',responseJsonSchema=response_schema)
         body={'contents':messages,'generationConfig':config}
@@ -61,7 +63,7 @@ class ReviewModel:
         if tools:
             body['tools']=[{'functionDeclarations':tools}]
         for attempt in range(3):
-            self.budget.admit(self.settings.model,12.5 if reasoning else self.settings.request_interval,reserve=reserve_requests)
+            self.budget.admit(self.settings.model,12.5 if strong else self.settings.request_interval,reserve=reserve_requests)
             try:
                 status,data,headers=(self.transport or self._send)(body)
             except (ValueError,UnicodeError):
