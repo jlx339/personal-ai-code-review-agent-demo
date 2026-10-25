@@ -10,7 +10,7 @@ def model(transport):
 
 def test_model_uses_native_tool_calls_and_output_cap():
     def transport(body):
-        assert body['generationConfig']['maxOutputTokens'] == 2000
+        assert body['generationConfig']['maxOutputTokens'] == 4000
         assert body['tools'][0]['functionDeclarations'][0]['name'] == 'read_source'
         return 200, {'candidates':[{'content':{'role':'model','parts':[{'functionCall':{'name':'read_source','args':{'path':'a.py'}},'thoughtSignature':'opaque'}]}}],'usageMetadata':{'promptTokenCount':12,'candidatesTokenCount':5}}, {}
     result=model(transport).invoke([],tools=[{'name':'read_source','parameters':{'type':'object','properties':{}}}])
@@ -59,3 +59,36 @@ def test_terminal_credential_error_stops_later_specialists_requests():
     with pytest.raises(ModelError): m.invoke([])
     with pytest.raises(ModelError): m.invoke([])
     assert m.budget.calls==1
+
+
+def test_reasoning_model_has_supported_thinking_level_and_shares_request_budget():
+    seen=[]
+    def transport(body):
+        seen.append(body['generationConfig'])
+        return 200,{'candidates':[{'content':{'parts':[{'text':'{}'}]}}]},{}
+    m=model(transport);strong=m.for_model('gemini-3.8-flash')
+    m.invoke([]);strong.invoke([])
+    assert seen[0]['thinkingConfig']['thinkingLevel']=='MINIMAL'
+    assert seen[1]['thinkingConfig']['thinkingLevel']=='LOW'
+    assert seen[1]['maxOutputTokens']==8000
+    assert m.budget.calls==2
+    assert m.budget.summary()['model_requests']=={'gemini-3.5-flash-lite':1,'gemini-3.8-flash':1}
+
+
+def test_model_routing_refuses_non_allowlisted_models():
+    with pytest.raises(ValueError): model(lambda _:None).for_model('paid-arbitrary-model')
+
+
+def test_previous_flash_reasoning_model_uses_low_thinking():
+    def transport(body):
+        assert body['generationConfig']['thinkingConfig']['thinkingLevel']=='LOW'
+        return 200,{'candidates':[{'content':{'parts':[{'text':'{}'}]}}]},{}
+    m=model(transport).for_model('gemini-3.6-flash')
+    assert m.invoke([]).text=='{}'
+
+
+def test_exhausted_provider_retries_stop_later_calls_in_the_same_run():
+    m=model(lambda _: (503,{},{}))
+    with pytest.raises(ModelError): m.invoke([])
+    with pytest.raises(ModelError): m.invoke([])
+    assert m.budget.calls==3

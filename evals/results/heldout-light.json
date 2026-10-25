@@ -1,0 +1,77 @@
+{
+  "phase": "First held-out run after source-reference and verifier-contract changes; light model only",
+  "run_id": 40170141343,
+  "pr": 6,
+  "source_sha": "d337ae32ed4ff8f4c6fbe192ba3bf1b2d6610799",
+  "diagnostics": {
+    "status": "complete",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "All candidates assessed"
+      }
+    },
+    "errors": [],
+    "scope_notes": [],
+    "usage": {
+      "requests": 7,
+      "input_tokens": 21001,
+      "output_tokens": 839,
+      "elapsed_seconds": 31.54
+    },
+    "findings": [
+      {
+        "id": "a6be1a06dcc4",
+        "title": "Falsy configuration values and environment variable parsing bugs in Configuration.from_runnable_config",
+        "category": "correctness",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_311/configuration.py",
+        "line": 62,
+        "verification": "supported",
+        "end_line": 67,
+        "evidence": [
+          {
+            "path": "eval_samples/case_311/configuration.py",
+            "start_line": 62,
+            "end_line": 67,
+            "excerpt": "        values: dict[str, Any] = {\n            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))\n            for f in fields(cls)\n            if f.init\n        }\n        return cls(**{k: v for k, v in values.items() if v})",
+            "source": "source"
+          }
+        ],
+        "impact": "Boolean configuration flags (such as include_source_str: bool = False or ask_for_clarification: bool = False) or any configuration values that evaluate to falsy (e.g., 0, False, empty dict/list, or environment variables containing \"0\" or \"False\") are completely discarded by `{k: v for k, v in values.items() if v}`. Furthermore, environment variables returned by `os.environ.get()` are strings, so setting an environment variable to \"false\" or \"0\" will be evaluated as truthy in a boolean context or cause type mismatches when passed to fields expecting booleans, ints, or dicts.",
+        "preconditions": "Calling `Configuration.from_runnable_config` or `MultiAgentConfiguration.from_runnable_config` when boolean flags like `include_source_str` are set to `False` (or omitted, defaulting to `False`), or when numeric/boolean/dict settings are configured with falsy values.",
+        "explanation": "Line 63 retrieves `os.environ.get(f.name.upper(), configurable.get(f.name))`. `os.environ.get` returns a string or `None`. If an env var is not set, it returns `None`. If set to `\"False\"` or `\"0\"`, it is a non-empty string, which is truthy. Line 67 filters out *any* value where `v` is falsy (`if v`), which drops `False`, `0`, `0.0`, empty collections, and leaves missing config values to raise TypeError or fall back incorrectly when `cls(...)` is invoked without defaults (or overriding dataclass defaults with falsy values).",
+        "suggestion": "values: dict[str, Any] = {}\nfor f in fields(cls):\n    if not f.init:\n        continue\n    env_val = os.environ.get(f.name.upper())\n    if env_val is not None:\n        # parse env_val based on type if needed\n        v = env_val\n    else:\n        v = configurable.get(f.name)\n    if v is not None:\n        values[f.name] = v\nreturn cls(**values)"
+      }
+    ]
+  },
+  "assistant_assessment": {
+    "matched_expected_ids": [
+      "environment-values-not-coerced",
+      "falsy-explicit-config-dropped"
+    ],
+    "owner_judgment_pending": true,
+    "limitations": [
+      "Finding correctly identifies real source defects, but conflates falsey Python values with nonempty string values in part of its impact text.",
+      "Some preconditions mention default False values that do not themselves demonstrate a changed result.",
+      "Suggested fix preserves missing/falsy distinction but leaves actual environment type parsing as a comment."
+    ]
+  }
+}

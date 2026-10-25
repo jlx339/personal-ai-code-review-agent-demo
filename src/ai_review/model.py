@@ -1,5 +1,5 @@
 """Gemini Developer API adapter retaining native tool-call thought signatures."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import json
 import urllib.error
 import urllib.request
@@ -24,6 +24,10 @@ class ReviewModel:
         self.key,self.settings,self.budget,self.transport=key,settings,budget,transport
         self.terminal_error=None
 
+    def for_model(self,name):
+        settings=replace(self.settings,model=name)
+        return self if name==self.settings.model else ReviewModel(self.key,settings,self.budget,self.transport)
+
     def _send(self,body):
         req=urllib.request.Request(
             f'https://generativelanguage.googleapis.com/v1beta/models/{self.settings.model}:generateContent',
@@ -46,7 +50,9 @@ class ReviewModel:
     def invoke(self,messages,tools=None,response_schema=None,system=''):
         if self.terminal_error:
             raise ModelError(self.terminal_error)
-        config={'maxOutputTokens':self.settings.output_tokens,'thinkingConfig':{'thinkingLevel':'MINIMAL'}}
+        reasoning=self.settings.model in ('gemini-3.6-flash','gemini-3.8-flash')
+        config={'maxOutputTokens':max(self.settings.output_tokens,8000) if reasoning else self.settings.output_tokens,
+            'thinkingConfig':{'thinkingLevel':'LOW' if reasoning else 'MINIMAL'}}
         if response_schema:
             config.update(responseMimeType='application/json',responseJsonSchema=response_schema)
         body={'contents':messages,'generationConfig':config}
@@ -55,7 +61,7 @@ class ReviewModel:
         if tools:
             body['tools']=[{'functionDeclarations':tools}]
         for attempt in range(3):
-            self.budget.admit()
+            self.budget.admit(self.settings.model,12.5 if reasoning else self.settings.request_interval)
             try:
                 status,data,headers=(self.transport or self._send)(body)
             except (ValueError,UnicodeError):
@@ -104,7 +110,7 @@ class ReviewModel:
             daily=status==429 and any(x in error_text for x in ('perday','per_day','daily','requestsperday'))
             if status in (401,403,400,404) or daily or attempt==2 or status not in (429,500,502,503,504):
                 message=f'Model request failed (HTTP {status})' + ('; daily quota exhausted' if daily else '')
-                if daily or status in (400,401,403,404):
+                if daily or status in (400,401,403,404) or attempt==2:
                     self.terminal_error=message
                 raise ModelError(message)
             retry=headers.get('Retry-After',headers.get('retry-after','5'))

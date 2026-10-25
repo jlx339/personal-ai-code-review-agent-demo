@@ -52,3 +52,9 @@ def test_deleted_authorization_guard_survives_as_base_side_report_finding():
     out=validate_findings(s,[issue])
     assert len(out.retained)==1
     assert not out.retained[0].inline_eligible
+
+
+def test_rejected_evidence_identifies_the_source_range_and_reason():
+    f=finding();f.evidence[0].excerpt='invented'
+    reason=validate_findings(snapshot(),[f]).rejected[0]
+    assert 'app.py:2' in reason and 'excerpt' in reason.lower()

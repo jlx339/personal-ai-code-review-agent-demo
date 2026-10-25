@@ -47,3 +47,11 @@ The owner selected both supported smoke-test findings. Publication run 401677817
 Independent review caught lost inline eligibility when a test finding was corrected to a functional/security category. Eligibility now uses the final category and changed-line anchor. Scanner output beyond 50 findings also marks scope incomplete. Both fixes have failing-then-passing regression tests. Latest suite: 73 passed, no skips.
 
 Three historical real-code samples are pinned with MIT attribution and pre-run expected issues. They use unchanged buggy upstream files in isolated owned PRs, rather than claiming synthetic snippets or reverse patches are original upstream changes. Their live results and manually judged metrics remain pending. These checks reduce known defects; they do not establish that the agent is bug free or that its model catches every bug.
+
+## Completed real-code runs and investigation recovery
+
+Live evaluations exposed early final answers without tools. A regression reproduced that behavior; specialists now receive an investigation request within the same turn budget. Saved diagnostics include sanitized finding evidence for remote assessment. The full suite passes 75 tests without skips, package builds succeed, and GitHub main-branch tests pass. Bandit on the reviewer reports no high issues and three medium generic URL-opening warnings, documented in `reliability.md`.
+
+A content comparison found two original sample candidates were byte-identical despite differing upstream SHAs. That repeated case is excluded from distinct counts, and a different LangChain middleware file was pre-labeled and reviewed. The final manifest includes three distinct source hashes from two MIT projects. Original and follow-up outcomes remain committed; evaluation findings were not published.
+
+All three distinct latest reports are partial. The model retained one other source-supported finding and missed all three pre-labeled high targets plus one medium target. Recovery improved tool investigation, but did not meet review-quality targets. Owner actionability judgments are pending, so human-labeled precision is undefined. The course's three-real-sample execution is documented, while model quality, the shared Google Doc, and video remain outstanding. `submission-draft.md` contains a candid documentation draft for the owner.

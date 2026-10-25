@@ -1,0 +1,30 @@
+[
+  {
+    "id": "environment-values-not-coerced",
+    "severity": "high",
+    "category": "correctness",
+    "start_line": 63,
+    "end_line": 67,
+    "additional_location": {
+      "start_line": 99,
+      "end_line": 103
+    },
+    "preconditions": "A typed field is supplied through an environment variable such as MAX_SEARCH_DEPTH=4 or INCLUDE_SOURCE_STR=false.",
+    "explanation": "os.environ.get returns strings. Dataclass annotations do not coerce values; boolean false remains a truthy string and numeric values remain strings. Both resolvers share the bug.",
+    "source_claim": "Pinned source and upstream PR #311. Fix is unmerged; manual source assessment, not maintainer-certified."
+  },
+  {
+    "id": "falsy-explicit-config-dropped",
+    "severity": "medium",
+    "category": "correctness",
+    "start_line": 67,
+    "end_line": 67,
+    "additional_location": {
+      "start_line": 103,
+      "end_line": 103
+    },
+    "preconditions": "A caller supplies a legitimate falsey configurable value that differs from its default, for example number_of_queries=0.",
+    "explanation": "Filtering overrides with if v drops explicit zero, False, empty collections and strings rather than only absent None; caller configuration is silently replaced by defaults.",
+    "source_claim": "Pinned source inspection; upstream resolver switches to an is-not-None filter."
+  }
+]

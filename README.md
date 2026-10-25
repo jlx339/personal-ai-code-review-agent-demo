@@ -2,7 +2,7 @@
 
 A GitHub Actions reviewer for personal Python AI projects. Three specialists investigate bugs, security risks, and missing tests. They use read-only tools, then a verifier challenges their findings. You receive a prioritized report and choose which findings to publish.
 
-**Current status:** Package installation, wheel contents, and real LangGraph orchestration pass the local test suite. A live Gemini/GitHub Actions smoke test produced a partial report with two supported findings. Human-approved publication and evaluation on three real code changes still need verification. This is not yet a finished assignment submission.
+**Current status:** The installed suite passes 75 tests, including packaging and real LangGraph orchestration. Owner-selected publication succeeded on the synthetic demo. Three historical real-code samples have been reviewed, with partial reports and missed known bugs. The review-quality target is not met; this is an assisted reviewer requiring human inspection. See [evaluation](docs/evaluation.md) and [reliability checks](docs/reliability.md). The Google Doc and recorded video remain outstanding.
 
 ## What it does
 
@@ -51,7 +51,7 @@ Analysis has read-only GitHub permissions. Publication gets PR write permission 
 
 ## Free-tier limits and recovery
 
-The initial model is `gemini-3.5-flash-lite`. The owner's setup showed 15 requests/minute, 250,000 input tokens/minute, and 500 requests/day; provider quotas may change. A connection test passed, but review quality has not been measured yet.
+The initial model is `gemini-3.5-flash-lite`. The owner's setup showed 15 requests/minute, 250,000 input tokens/minute, and 500 requests/day; provider quotas may change. Authentication works, but the real-code evaluation has exposed inconsistent detection and missed bugs.
 
 Each run allows 12 model requests including retries, three turns per specialist, two verifier turns, and 2,000 output tokens per request. Calls are spaced at least five seconds apart. Reviews are serialized in each repository; multiple repositories sharing a Google project may still compete for quota. There is no paid provider fallback or automatic billing setup.
 
@@ -67,7 +67,7 @@ uv run pytest -q
 
 Unit tests use synthetic fixtures and scripted API responses. They test failure handling and publication boundaries without model charges or external writes. A LangGraph integration test requires its installed dependency; mocked specialist tests do not establish real model quality.
 
-[Evaluation instructions](docs/evaluation.md) describe the separate three-real-sample benchmark. [Architecture](docs/architecture.md), [build log](docs/build-log.md), and [demo script](docs/demo-script.md) support the project submission. The submission also needs a Google Doc, GitHub link, and recorded demo of five minutes or less.
+[Evaluation instructions](docs/evaluation.md) describe the separate three-real-sample benchmark. [Architecture](docs/architecture.md), [build log](docs/build-log.md), and [demo script](docs/demo-script.md) support the project submission. A [Google Doc draft](docs/submission-draft.md) is prepared locally. The submission still needs the shared Google Doc and recorded demo of five minutes or less.
 
 Workflow files use JSON syntax, which is a valid YAML subset. This permits semantic configuration tests without a YAML parser. Action revisions are commit-pinned. The tests workflow may execute PR test code with a read-only token and no secrets; privileged analysis never checks out the PR revision.
 

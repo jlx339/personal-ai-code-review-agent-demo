@@ -1,0 +1,13 @@
+{
+  "case-335": {
+    "supporting_file": "eval_samples/case_335/src/open_deep_research/utils.py",
+    "upstream_repository": "langchain-ai/open_deep_research",
+    "upstream_path": "src/open_deep_research/utils.py",
+    "upstream_sha": "20aaa0d422bd290c83f93574810ef1244e8d5955",
+    "source_sha256": "1536ea25de5210d7b37f8c81ade3348a000f43a814d4e853e1e12b3ae1de0812",
+    "license": "MIT; evals/upstream/LICENSE",
+    "reason": "Provide real imported helper definitions that the previous isolated file lacked. get_all_tools includes ResearchComplete; missing context caused an unsupported absence claim. The reviewed target file is unchanged.",
+    "evaluation_target_path": "eval_samples/case_335/src/open_deep_research/deep_researcher.py",
+    "layout_note": "Preserve the src/open_deep_research package layout so absolute imports resolve to actual source, rather than guessing sibling modules."
+  }
+}

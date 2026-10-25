@@ -1,4 +1,5 @@
 """Deterministic source evidence checks; no first-match reanchoring."""
+from ai_review.source import source_lines
 from dataclasses import dataclass,field
 import hashlib
 import json
@@ -25,7 +26,7 @@ def validate_findings(snapshot,candidates):
     for f in candidates:
         source=snapshot.files.get(f.path)
         content=(source.base_content if f.source=='base' else source.content) if source else None
-        if not source or not source.changed or content is None or f.end_line>len(content.splitlines()) or not f.evidence:
+        if not source or not source.changed or content is None or f.end_line>len(source_lines(content)) or not f.evidence:
             out.rejected.append('Candidate lacks valid changed-source location/evidence')
             continue
         if not source.patch_available:
@@ -36,21 +37,25 @@ def validate_findings(snapshot,candidates):
             out.rejected.append('Candidate does not overlap changed source')
             continue
         valid=True
+        reason=''
         anchor_evidence=False
         for e in f.evidence:
             ef=snapshot.files.get(e.path)
             evidence_content=(ef.base_content if e.source=='base' else ef.content) if ef else None
-            if evidence_content is None or e.end_line>len(evidence_content.splitlines()):
+            if evidence_content is None or e.end_line>len(source_lines(evidence_content)):
                 valid=False
+                reason=f'Evidence source/range unavailable: {e.path}:{e.start_line}-{e.end_line}'
                 break
-            actual='\n'.join(redact_source(evidence_content).splitlines()[e.start_line-1:e.end_line])
+            actual='\n'.join(source_lines(redact_source(evidence_content))[e.start_line-1:e.end_line])
             if actual != redact_source(e.excerpt):
                 valid=False
+                reason=f'Evidence excerpt mismatch: {e.path}:{e.start_line}-{e.end_line}'
                 break
             if e.path==f.path and (e.source=='base')==(f.source=='base') and e.start_line<=f.start_line and e.end_line>=f.end_line:
                 anchor_evidence=True
         if not valid or not anchor_evidence or not f.impact.strip() or not f.explanation.strip():
-            out.rejected.append('Candidate evidence or impact is unsupported')
+            reason=reason or ('Evidence does not cover finding anchor' if not anchor_evidence else 'Impact or explanation is missing')
+            out.rejected.append(f'{f.path}:{f.start_line}-{f.end_line}: {reason}')
             continue
         identity=finding_identity(f)
         if identity in seen:

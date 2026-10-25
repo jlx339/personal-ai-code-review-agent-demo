@@ -1,0 +1,105 @@
+{
+  "phase": "Gemini3.6 reasoning comparison",
+  "sample": "case-335",
+  "run_id": 40170787363,
+  "head": "b3ca7e8f755d7c7a4920a4c41f512237cd1ab5b2",
+  "reviewer_sha": "375401289452058c0d5b408460de727b35caa97d",
+  "diagnostics": {
+    "status": "complete",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "complete",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "complete",
+        "detail": "All candidates assessed"
+      }
+    },
+    "errors": [],
+    "scope_notes": [],
+    "usage": {
+      "requests": 12,
+      "input_tokens": null,
+      "output_tokens": null,
+      "model_requests": {
+        "gemini-3.6-flash": 6,
+        "gemini-3.5-flash-lite": 6
+      },
+      "elapsed_seconds": 123.48
+    },
+    "findings": [
+      {
+        "id": "62d791fdaca1",
+        "title": "Unchecked tool dictionary lookup causes KeyError on completion signal or missing tools",
+        "category": "correctness",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_335/deep_researcher.py",
+        "line": 468,
+        "verification": "supported",
+        "end_line": 498,
+        "evidence": [
+          {
+            "path": "eval_samples/case_335/deep_researcher.py",
+            "start_line": 468,
+            "end_line": 498,
+            "excerpt": "    tools_by_name = {\n        tool.name if hasattr(tool, \"name\") else tool.get(\"name\", \"web_search\"): tool \n        for tool in tools\n    }\n    \n    # Execute all tool calls in parallel\n    tool_calls = most_recent_message.tool_calls\n    tool_execution_tasks = [\n        execute_tool_safely(tools_by_name[tool_call[\"name\"]], tool_call[\"args\"], config) \n        for tool_call in tool_calls\n    ]\n    observations = await asyncio.gather(*tool_execution_tasks)\n    \n    # Create tool messages from execution results\n    tool_outputs = [\n        ToolMessage(\n            content=observation,\n            name=tool_call[\"name\"],\n            tool_call_id=tool_call[\"id\"]\n        ) \n        for observation, tool_call in zip(observations, tool_calls)\n    ]\n    \n    # Step 3: Check late exit conditions (after processing tools)\n    exceeded_iterations = state.get(\"tool_call_iterations\", 0) >= configurable.max_react_tool_calls\n    research_complete_called = any(\n        tool_call[\"name\"] == \"ResearchComplete\" \n        for tool_call in most_recent_message.tool_calls\n    )\n    \n    if exceeded_iterations or research_complete_called:",
+            "source": "source"
+          }
+        ],
+        "impact": "When a researcher model emits a `ResearchComplete` tool call or an unmapped tool call, accessing `tools_by_name[tool_call[\"name\"]]` raises an unhandled `KeyError` during list comprehension construction, crashing the researcher subgraph instead of completing research or returning a tool error message.",
+        "preconditions": "The researcher model emits a tool call for `ResearchComplete` or any tool name not returned by `get_all_tools(config)`.",
+        "explanation": "In `researcher_tools`, the function attempts to execute tool calls in parallel before checking for completion signals. Line 476 performs a direct dictionary lookup `tools_by_name[tool_call[\"name\"]]`. Since `tools_by_name` only contains search and MCP tools from `get_all_tools`, tool calls such as `ResearchComplete` (which is checked afterwards on line 493) or unknown tools are missing from `tools_by_name`. This raises an immediate `KeyError` prior to `execute_tool_safely` running or `research_complete_called` being evaluated.",
+        "suggestion": "Filter out `ResearchComplete` or safely handle missing tools when constructing execution tasks:\n\n```python\u521b\ntool_execution_tasks = []\nfor tool_call in tool_calls:\n    if tool_call[\"name\"] == \"ResearchComplete\":\n        continue\n    tool = tools_by_name.get(tool_call[\"name\"])\n    if tool:\n        tool_execution_tasks.append(execute_tool_safely(tool, tool_call[\"args\"], config))\n```\n\nAssert in tests that calling `ResearchComplete` does not trigger a `KeyError`."
+      },
+      {
+        "id": "b0d37675eb51",
+        "title": "Unconditional Exception Handler Masks Critical Errors and Forces Premature Research Termination",
+        "category": "correctness",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_335/deep_researcher.py",
+        "line": 332,
+        "verification": "supported",
+        "end_line": 343,
+        "evidence": [
+          {
+            "path": "eval_samples/case_335/deep_researcher.py",
+            "start_line": 332,
+            "end_line": 343,
+            "excerpt": "        except Exception as e:\n            # Handle research execution errors\n            if is_token_limit_exceeded(e, configurable.research_model) or True:\n                # Token limit exceeded or other error - end research phase\n                return Command(\n                    goto=END,\n                    update={\n                        \"notes\": get_notes_from_tool_calls(supervisor_messages),\n                        \"research_brief\": state.get(\"research_brief\", \"\")\n                    }\n                )\n    ",
+            "source": "source"
+          }
+        ],
+        "impact": "Any exception raised during the concurrent execution of sub-research tasks is unconditionally caught due to 'or True', forcing the deep research process to abruptly terminate and finalize reports with partial or missing data.",
+        "preconditions": "An exception (network error, timeout, or validation issue) occurs during `asyncio.gather(*research_tasks)` in `supervisor_tools`.",
+        "explanation": "In `eval_samples/case_335/deep_researcher.py` at line 334, the check `if is_token_limit_exceeded(e, configurable.research_model) or True:` evaluates to `True` for every exception. This completely defeats the purpose of checking for token limit exhaustion and unconditionally routes the workflow state to `END` via a Command return.",
+        "suggestion": "Remove `or True` from the exception check:\n\n```python\nexcept Exception as e:\n    # Handle research execution errors\n    if is_token_limit_exceeded(e, configurable.research_model):\n        # Token limit exceeded - end research phase\n        return Command(\n            goto=END,\n            update={\n                \"notes\": get_notes_from_tool_calls(supervisor_messages),\n                \"research_brief\": state.get(\"research_brief\", \"\")\n            }\n        )\n    raise e\n```\n\nAssert in tests that non-token-limit exceptions are re-raised or handled properly instead of unconditionally terminating research to `END`."
+      }
+    ]
+  },
+  "assistant_assessment": {
+    "matched_pre_labeled_issue_ids": [],
+    "owner_judgment_pending": true,
+    "notes": [
+      "Both original targets remain missed.",
+      "Unconditional exception swallowing is a real additional issue; revised suggestion propagates unexpected exceptions.",
+      "Unchecked tool-name lookup requires checking get_all_tools to confirm the specific ResearchComplete trigger. Suggested filtering must also preserve tool-result alignment."
+    ],
+    "confirmed_false_positive": "ResearchComplete is present in the actual get_all_tools implementation (utils.py:579). The specific completion-signal KeyError claim is false. The unknown-tool robustness concern does not justify that claim as written.",
+    "fix_quality_issue": "Filtering task execution without filtering the matching tool_calls list would misalign zipped tool outputs. Do not copy the suggested snippet as a complete fix."
+  }
+}

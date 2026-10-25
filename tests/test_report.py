@@ -25,3 +25,16 @@ def test_quoted_code_remains_readable_while_html_and_mentions_are_escaped():
     from ai_review.report import safe_text
     assert safe_text('`response["answer"]` and `state[\'notes\']`') == '`response["answer"]` and `state[\'notes\']`'
     assert safe_text('<script>@owner</script>') == '&lt;script&gt;＠owner&lt;/script&gt;'
+
+
+def test_diagnostic_finding_contains_sanitized_evidence_for_remote_evaluation():
+    import json
+    from test_publish import report
+    from ai_review.report import diagnostic_summary
+    r = report()
+    r.findings[0].impact = 'API_KEY="private-literal"'
+    result = diagnostic_summary(r)
+    payload = json.loads(result)['findings'][0]
+    assert payload['evidence'][0]['excerpt'] == r.findings[0].evidence[0].excerpt
+    assert payload['explanation'] == r.findings[0].explanation
+    assert 'private-literal' not in result
