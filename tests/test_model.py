@@ -77,3 +77,18 @@ def test_reasoning_model_has_supported_thinking_level_and_shares_request_budget(
 
 def test_model_routing_refuses_non_allowlisted_models():
     with pytest.raises(ValueError): model(lambda _:None).for_model('paid-arbitrary-model')
+
+
+def test_previous_flash_reasoning_model_uses_low_thinking():
+    def transport(body):
+        assert body['generationConfig']['thinkingConfig']['thinkingLevel']=='LOW'
+        return 200,{'candidates':[{'content':{'parts':[{'text':'{}'}]}}]},{}
+    m=model(transport).for_model('gemini-3.6-flash')
+    assert m.invoke([]).text=='{}'
+
+
+def test_exhausted_provider_retries_stop_later_calls_in_the_same_run():
+    m=model(lambda _: (503,{},{}))
+    with pytest.raises(ModelError): m.invoke([])
+    with pytest.raises(ModelError): m.invoke([])
+    assert m.budget.calls==3

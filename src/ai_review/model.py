@@ -50,7 +50,7 @@ class ReviewModel:
     def invoke(self,messages,tools=None,response_schema=None,system=''):
         if self.terminal_error:
             raise ModelError(self.terminal_error)
-        reasoning=self.settings.model=='gemini-3.8-flash'
+        reasoning=self.settings.model in ('gemini-3.6-flash','gemini-3.8-flash')
         config={'maxOutputTokens':max(self.settings.output_tokens,8000) if reasoning else self.settings.output_tokens,
             'thinkingConfig':{'thinkingLevel':'LOW' if reasoning else 'MINIMAL'}}
         if response_schema:
@@ -110,7 +110,7 @@ class ReviewModel:
             daily=status==429 and any(x in error_text for x in ('perday','per_day','daily','requestsperday'))
             if status in (401,403,400,404) or daily or attempt==2 or status not in (429,500,502,503,504):
                 message=f'Model request failed (HTTP {status})' + ('; daily quota exhausted' if daily else '')
-                if daily or status in (400,401,403,404):
+                if daily or status in (400,401,403,404) or attempt==2:
                     self.terminal_error=message
                 raise ModelError(message)
             retry=headers.get('Retry-After',headers.get('retry-after','5'))

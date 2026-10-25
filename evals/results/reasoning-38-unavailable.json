@@ -1,0 +1,74 @@
+{
+  "phase": "Gemini3.8 availability comparison failed; not a model-quality score",
+  "run_id": 40170382783,
+  "diagnostics": {
+    "status": "partial",
+    "checks": {
+      "static_analysis": {
+        "status": "complete",
+        "detail": "Bandit completed"
+      },
+      "correctness": {
+        "status": "partial",
+        "detail": "ModelError"
+      },
+      "security": {
+        "status": "complete",
+        "detail": "1 candidates; tool investigation completed"
+      },
+      "tests": {
+        "status": "partial",
+        "detail": "0 candidates; tool investigation completed"
+      },
+      "verifier": {
+        "status": "partial",
+        "detail": "ModelError"
+      }
+    },
+    "errors": [
+      "correctness reviewer incomplete: Model request failed (HTTP 503)",
+      "tests candidate rejected (Missing test coverage for exception handling and retry exhaustion paths in deep_researcher nodes): Evidence range outside delivered source or exceeds 40 lines",
+      "Verifier incomplete; candidates are not publishable: Model request failed (HTTP 503)"
+    ],
+    "scope_notes": [
+      "search_source: output truncated"
+    ],
+    "usage": {
+      "requests": 12,
+      "input_tokens": null,
+      "output_tokens": null,
+      "model_requests": {
+        "gemini-3.8-flash": 6,
+        "gemini-3.5-flash-lite": 6
+      },
+      "elapsed_seconds": 284.76
+    },
+    "findings": [
+      {
+        "id": "6cc0e49b423d",
+        "title": "Unconditional Exception Fallback in Supervisor Tool Execution Catch Block",
+        "category": "security",
+        "severity": "high",
+        "source": "head",
+        "path": "eval_samples/case_335/deep_researcher.py",
+        "line": 332,
+        "verification": "unverified",
+        "end_line": 343,
+        "evidence": [
+          {
+            "path": "eval_samples/case_335/deep_researcher.py",
+            "start_line": 332,
+            "end_line": 343,
+            "excerpt": "        except Exception as e:\n            # Handle research execution errors\n            if is_token_limit_exceeded(e, configurable.research_model) or True:\n                # Token limit exceeded or other error - end research phase\n                return Command(\n                    goto=END,\n                    update={\n                        \"notes\": get_notes_from_tool_calls(supervisor_messages),\n                        \"research_brief\": state.get(\"research_brief\", \"\")\n                    }\n                )\n    ",
+            "source": "source"
+          }
+        ],
+        "impact": "Any exception raised during research delegation (such as network glitches, timeouts, or transient API errors) is unconditionally caught and immediately terminates the research phase, returning incomplete or missing notes instead of allowing retries or proper error handling.",
+        "preconditions": "An exception occurs during `asyncio.gather(*research_tasks)` in the `supervisor_tools` node.",
+        "explanation": "Line 334 evaluates `if is_token_limit_exceeded(e, configurable.research_model) or True:`, which always evaluates to `True`. As a result, all exceptions encountered during parallel research execution trigger an immediate exit to `END` rather than handling token limits specifically or bubbling up transient errors.",
+        "suggestion": "Remove the `or True` clause from the exception check so that non-token-limit exceptions can be appropriately handled or retried."
+      }
+    ]
+  },
+  "assessment": "All six Gemini3.8 attempts failed HTTP503. No stronger-model correctness or verifier verdict was available. Preserve incomplete findings and do not publish. Subsequent comparison selects allowlisted free Gemini3.6 explicitly, without an automatic paid fallback."
+}
