@@ -58,7 +58,7 @@ Actual user instructions included:
 - “go ahead, also make sure that the ai review is bug free”
 - “can we try those? I would like to make the agent to be able to correctly find real bugs before we submit this project.”
 
-These shaped the scope: GitHub Actions, Python AI projects, Gemini free-tier access, and explicit reliability checks. The last request became a verification exercise rather than an unsupported guarantee. Implementation planning and design decisions are preserved in `docs/superpowers/`. Runtime specialist and verifier prompts are under `src/ai_review/prompts/`; they are distinct from the instructions used to build the application.
+These shaped the scope: GitHub Actions, Python AI projects, Gemini free-tier access, and explicit reliability checks. The last request became a verification exercise rather than an unsupported guarantee. Implementation planning and recording aids are kept as local working notes. Runtime specialist and verifier prompts are under `src/ai_review/prompts/`; they are distinct from the instructions used to build the application.
 
 ## Iterations and observations
 
@@ -66,7 +66,7 @@ The first setup run failed because Hatch could not find the package from the dis
 
 Live model runs exposed oversized responses, overly broad output categories, short-file source windows, and source-directory search failures. Bounded structured output, tool handling, and specialist schemas improved recovery. Failed and truncated checks remain visible as partial reports.
 
-Live GitHub publication exposed differences between PR metadata and the trusted reusable-workflow revision. Publication now verifies these independently. The owner successfully selected and published both supported synthetic findings in run 40167781789; the posted review is linked in `docs/live-demo.md`.
+Live GitHub publication exposed differences between PR metadata and the trusted reusable-workflow revision. Publication now verifies these independently. The owner successfully selected and published both supported synthetic findings in run 40167781789; the [posted review is available on PR #1](https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/1#pullrequestreview-5641796669).
 
 A reliability pass added independent verifier category assignment, correct finding identities after category changes, exact duplicate merging, recalculated inline anchors, readable Markdown quotes, and explicit prompt/scanner truncation. Regression tests reproduced each known defect before its fix. Specialists now receive an investigation request when they try to end early without tools. The latest local suite has 109 passing tests with no skips, including real LangGraph execution and package building. Those tests check application behavior; they do not prove model judgments correct.
 
@@ -81,7 +81,7 @@ The workflow already demonstrates read-only analysis, source-grounded findings, 
 - Public GitHub code: available at the repository link above.
 - Three-real-sample results: recorded, with misses and partial reports visible; the quality target is not met.
 - Google Doc: copy this draft into a Google Doc, check the final results, and share its link.
-- Video: record at most five minutes using `docs/demo-script.md`, showing the genuine real-code report, two accurate examples, the existing human-approved synthetic publication, and one limitation. The script targets 4 minutes 40 seconds.
+- Video: record at most five minutes, showing the genuine real-code report, two accurate examples, the existing human-approved synthetic publication, and one limitation. The planned recording targets 4 minutes 40 seconds.
 
 ## Final lessons
 
@@ -91,6 +91,6 @@ Flash 3.6 reached its daily free quota. The old adapter also mapped network/time
 
 ## Demo evidence
 
-The featured real review is [run 40175006325](https://github.com/jlx339/personal-ai-code-review-agent-demo/actions/runs/40175006325). Finding `d96300f55fb3` identifies `or True` hiding unexpected child-research errors. Finding `73529e1e478f` identifies the compression classifier receiving the wrong model setting. Pinned source and explanation links are in [demo evidence](https://github.com/jlx339/personal-ai-code-review-agent-demo/blob/main/docs/demo-evidence.md).
+The featured real review is [run 40175006325](https://github.com/jlx339/personal-ai-code-review-agent-demo/actions/runs/40175006325). Finding `d96300f55fb3` identifies `or True` hiding unexpected child-research errors. Finding `73529e1e478f` identifies the compression classifier receiving the wrong model setting. Exact source quotations and verifier explanations are preserved in `evals/results/final-high-comparison.json`.
 
 The already completed owner-approved publication is [review 5641796669 on synthetic PR #1](https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/1#pullrequestreview-5641796669). It demonstrates the publication workflow separately from the real-code examples.

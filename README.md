@@ -71,10 +71,10 @@ uv run pytest -q
 
 Unit tests use synthetic fixtures and scripted API responses. They test failure handling and publication boundaries without model charges or external writes. A LangGraph integration test requires its installed dependency; mocked specialist tests do not establish real model quality.
 
-[Latest source-checked outcomes](docs/review-quality-results.md) and [evaluation instructions](docs/evaluation.md) describe the separate three-real-sample benchmark. [Architecture](docs/architecture.md), [build log](docs/build-log.md), and [demo script](docs/demo-script.md) support the project submission. The [submission checklist](docs/submission-checklist.md), [Google Doc text](docs/submission-draft.md), [4:40 recording script](docs/demo-script.md), and [pinned demo evidence](docs/demo-evidence.md) are prepared. The submission still needs the shared Google Doc and recorded demo of five minutes or less.
+[Latest source-checked outcomes](docs/review-quality-results.md) and [evaluation instructions](docs/evaluation.md) describe the three-real-sample benchmark. See [architecture](docs/architecture.md), [reliability checks](docs/reliability.md), and [project submission text](docs/submission-draft.md). The submission still needs a shared Google Doc and a recorded demo of five minutes or less.
 
 Workflow files use JSON syntax, which is a valid YAML subset. This permits semantic configuration tests without a YAML parser. Action revisions are commit-pinned. The tests workflow may execute PR test code with a read-only token and no secrets; privileged analysis never checks out the PR revision.
 
 ## Live demo
 
-[Demo repository](https://github.com/jlx339/personal-ai-code-review-agent-demo) · [Synthetic PR 1](https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/1) · [Recorded smoke-test results](docs/live-demo.md). The intentionally faulty PR should not be merged.
+[Demo repository](https://github.com/jlx339/personal-ai-code-review-agent-demo) · [Synthetic PR 1](https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/1) · [Owner-approved synthetic review](https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/1#pullrequestreview-5641796669). The intentionally faulty PR should not be merged.

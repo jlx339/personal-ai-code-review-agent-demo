@@ -8,3 +8,11 @@ __pycache__/
 reports/
 .superpowers/
 *.egg-info/
+
+# Keep recording aids and working notes local; publish only project documentation.
+/docs/*
+!/docs/architecture.md
+!/docs/evaluation.md
+!/docs/reliability.md
+!/docs/review-quality-results.md
+!/docs/submission-draft.md

@@ -39,4 +39,4 @@ Latest HIGH analysis times were approximately 70 seconds for case #335, 71 secon
 
 ## Submission status
 
-Real bug detection can now be demonstrated. The original accuracy target remains unmet, and some findings/patch suggestions still need correction or rejection by a person. Before claiming the target passed, obtain owner judgments and run further evaluation with an available stronger model or independently validated scenarios. The Google Doc and five-minute video are still owner submission steps; `submission-draft.md` and `demo-script.md` are prepared.
+Real bug detection can now be demonstrated. The original accuracy target remains unmet, and some findings/patch suggestions still need correction or rejection by a person. Before claiming the target passed, obtain owner judgments and run further evaluation with an available stronger model or independently validated scenarios. The Google Doc and five-minute video are still owner submission steps; the project submission text is prepared in `submission-draft.md`; recording aids are kept locally.
