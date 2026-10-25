@@ -1,0 +1,13 @@
+{
+  "sample": "case-38845",
+  "repository": "langchain-ai/langchain",
+  "url": "https://github.com/langchain-ai/langchain/pull/38845",
+  "base_sha": "ceb1e4e6524ed7abcb6228861991f556d754f9ac",
+  "head_sha": "f0ec5d372eb5956ab30edda083425457a5a075f5",
+  "upstream_fix_merged": true,
+  "license": "MIT",
+  "path": "libs/langchain_v1/langchain/agents/middleware/tool_retry.py",
+  "evaluation_mode": "Unmodified full buggy source at upstream base SHA added as a new file in an owned disposable PR.",
+  "status": "Expected issue labeled before model execution."
+}
+

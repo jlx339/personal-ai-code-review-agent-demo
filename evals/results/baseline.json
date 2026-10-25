@@ -145,5 +145,10 @@
   "expected_high_issues_found": 0,
   "expected_high_issues_total": 3,
   "unexpected_supported_finding": "case-335 found the same unconditional exception handler independently labeled in case-286. Assistant source inspection supports it; full artifact remains available for owner review.",
-  "limits": "All reports partial. Same project; two files overlap. Reference fixes unmerged. Baseline misses retained even after later iterations."
+  "limits": "All reports partial. Same project; two files overlap. Reference fixes unmerged. Baseline misses retained even after later iterations.",
+  "distinct_sample_count": 2,
+  "excluded_repeat_sample_ids": [
+    "case-286"
+  ],
+  "aggregate_warning": "The original three-run total includes duplicate source. Do not use it as a three-distinct-sample benchmark; case-38845 supplies the third distinct sample separately."
 }

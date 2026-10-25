@@ -1,6 +1,6 @@
 {
-  "status": "Baseline evaluation executed: 3 partial reports; iteration pending",
-  "method": "Full unmodified buggy files at pinned upstream base SHAs, introduced as new files in separate disposable owned PRs. Upstream fix PRs supply reference labels; the original introducing diffs are not reproduced. All three are from the same MIT project and primarily test correctness. No security or benign-case performance claim.",
+  "status": "Distinct sample correction: case-286 is byte-identical to case-335 and excluded from aggregate scoring. Third distinct sample pending.",
+  "method": "Three distinct full unmodified historical Python files from two MIT projects, introduced as new files in owned disposable PRs. Original introducing diffs are not reproduced. Expected labels precede execution. Repeated byte-identical source is excluded from distinct-sample counts. Correctness-focused; no security or benign-case performance claim.",
   "samples": [
     {
       "id": "case-335",
@@ -22,25 +22,6 @@
       "baseline_run_id": 40168318624
     },
     {
-      "id": "case-286",
-      "repository": "langchain-ai/open_deep_research",
-      "url": "https://github.com/langchain-ai/open_deep_research/pull/286",
-      "license": "MIT",
-      "base_sha": "408da442a661ea5e40a6163329f82e3f22628949",
-      "head_sha": "c7c621213fd8b9e3c80f3e824382d4bc106f789b",
-      "python_paths": [
-        "src/open_deep_research/deep_researcher.py"
-      ],
-      "reviewed_upstream_sha": "408da442a661ea5e40a6163329f82e3f22628949",
-      "evaluation_path": "eval_samples/case_286/deep_researcher.py",
-      "expected_issues_file": "evals/expected/case-286.expected.json",
-      "provenance_file": "evals/expected/case-286.json",
-      "status": "baseline partial; follow-up pending",
-      "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/3",
-      "initial_evaluation_head": "70b6e512ad98f0e90919ba18959e23c5cb01527e",
-      "baseline_run_id": 40168419115
-    },
-    {
       "id": "case-299",
       "repository": "langchain-ai/open_deep_research",
       "url": "https://github.com/langchain-ai/open_deep_research/pull/299",
@@ -58,7 +39,45 @@
       "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/4",
       "initial_evaluation_head": "4540c4909e33b8747a3b304654394d50b56e3524",
       "baseline_run_id": 40168490335
+    },
+    {
+      "id": "case-38845",
+      "repository": "langchain-ai/langchain",
+      "url": "https://github.com/langchain-ai/langchain/pull/38845",
+      "license": "MIT",
+      "base_sha": "ceb1e4e6524ed7abcb6228861991f556d754f9ac",
+      "head_sha": "f0ec5d372eb5956ab30edda083425457a5a075f5",
+      "python_paths": [
+        "libs/langchain_v1/langchain/agents/middleware/tool_retry.py"
+      ],
+      "reviewed_upstream_sha": "ceb1e4e6524ed7abcb6228861991f556d754f9ac",
+      "evaluation_path": "eval_samples/case_38845/tool_retry.py",
+      "expected_issues_file": "evals/expected/case-38845.expected.json",
+      "provenance_file": "evals/expected/case-38845.json",
+      "status": "prepared; execution pending"
     }
   ],
-  "required_samples": 3
+  "required_samples": 3,
+  "excluded_repeat_samples": [
+    {
+      "id": "case-286",
+      "repository": "langchain-ai/open_deep_research",
+      "url": "https://github.com/langchain-ai/open_deep_research/pull/286",
+      "license": "MIT",
+      "base_sha": "408da442a661ea5e40a6163329f82e3f22628949",
+      "head_sha": "c7c621213fd8b9e3c80f3e824382d4bc106f789b",
+      "python_paths": [
+        "src/open_deep_research/deep_researcher.py"
+      ],
+      "reviewed_upstream_sha": "408da442a661ea5e40a6163329f82e3f22628949",
+      "evaluation_path": "eval_samples/case_286/deep_researcher.py",
+      "expected_issues_file": "evals/expected/case-286.expected.json",
+      "provenance_file": "evals/expected/case-286.json",
+      "status": "baseline partial; follow-up pending",
+      "evaluation_pr": "https://github.com/jlx339/personal-ai-code-review-agent-demo/pull/3",
+      "initial_evaluation_head": "70b6e512ad98f0e90919ba18959e23c5cb01527e",
+      "baseline_run_id": 40168419115,
+      "reason": "Source is byte-identical to case-335 despite a different upstream base SHA. Retained as repeated measurement, not a distinct sample."
+    }
+  ]
 }

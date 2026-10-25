@@ -1,0 +1,17 @@
+[
+  {
+    "id": "nonretryable-tool-errors-swallowed",
+    "severity": "high",
+    "category": "correctness",
+    "start_line": 326,
+    "end_line": 328,
+    "additional_location": {
+      "start_line": 388,
+      "end_line": 390
+    },
+    "preconditions": "Tool throws an exception excluded by retry_on and on_failure is continue or a callable.",
+    "explanation": "Both sync and async non-retryable branches invoke _handle_failure. With continue/callable this converts excluded errors into ToolMessages instead of surfacing the failure. The merged upstream fix reraises in both branches.",
+    "source_claim": "Merged upstream PR #38845 plus inspection of the pinned sync/async branches and _handle_failure."
+  }
+]
+
